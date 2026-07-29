@@ -1,0 +1,1344 @@
+/* ==========================================================================
+   CONTROL HORARIO - ESTILOS GENERALES
+   ========================================================================== */
+
+:root {
+
+    --primary: #2563eb;
+
+    --sidebar-bg: #2C3E50;
+
+    --accent: #F39C12;
+
+    --bg-main: #f1f5f9;
+
+    --bg-card: #ffffff;
+
+    --text-main: #1e293b;
+
+    --text-soft: #64748b;
+
+    --border-color: #e2e8f0;
+
+}
+
+/* ==========================================================================
+   DARK MODE
+========================================================================== */
+
+body.dark-mode {
+
+    --bg-main: #0f172a;
+
+    --bg-card: #1e293b;
+
+    --text-main: #f1f5f9;
+
+    --text-soft: #94a3b8;
+
+    --border-color: #334155;
+
+    --sidebar-bg: #020617;
+
+}
+
+* {
+
+    box-sizing: border-box;
+
+}
+
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    font-family: 'Roboto', sans-serif;
+
+    background-color: var(--bg-main);
+
+    color: var(--text-main);
+
+    transition: background 0.3s, color 0.3s;
+
+}
+
+img {
+
+    max-width: 100%;
+
+    height: auto;
+
+    display: block;
+
+}
+
+/* ==========================================================================
+   LOGIN
+========================================================================== */
+
+.body-login {
+
+    background-color: var(--sidebar-bg);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    min-height: 100vh;
+
+}
+
+.login-wrapper {
+
+    width: 100%;
+
+    max-width: 400px;
+
+}
+
+.logo-header img {
+
+    max-width: 250px;
+
+    margin: 0 auto 20px;
+
+}
+
+.login-card {
+
+    background: var(--bg-card);
+
+    padding: 30px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+}
+
+.login-card input {
+
+    width: 100%;
+
+    padding: 12px;
+
+    margin-bottom: 15px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 8px;
+
+    background: var(--bg-card);
+
+    color: var(--text-main);
+
+}
+
+/* ==========================================================================
+   LAYOUT PRINCIPAL
+========================================================================== */
+
+.dashboard-container {
+
+    display: flex;
+
+    min-height: 100vh;
+
+}
+
+/* ==========================================================================
+   SIDEBAR
+========================================================================== */
+
+.sidebar {
+
+    width: 250px;
+
+    background-color: var(--sidebar-bg);
+
+    color: white;
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    height: 100vh;
+
+    padding: 25px 20px;
+
+    transition: 0.3s;
+
+}
+
+.sidebar h2 {
+
+    margin-bottom: 40px;
+
+}
+
+.sidebar nav {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+}
+
+.sidebar nav a {
+
+    color: #cbd5e1;
+
+    text-decoration: none;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    transition: 0.2s;
+
+    font-size: 15px;
+
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.activo {
+
+    background-color: var(--accent);
+
+    color: var(--sidebar-bg);
+
+    font-weight: bold;
+
+}
+
+/* ==========================================================================
+   CONTENIDO
+========================================================================== */
+
+.content-wrapper {
+
+    margin-left: 250px;
+
+    width: calc(100% - 250px);
+
+    min-height: 100vh;
+
+}
+
+.top-header {
+
+    background: var(--bg-card);
+
+    padding: 20px 30px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+
+}
+
+.main-content {
+
+    padding: 30px;
+
+    width: 100%;
+
+}
+
+/* ==========================================================================
+   TARJETAS
+========================================================================== */
+
+.fichaje-card,
+.card-dashboard,
+.jornada-card {
+
+    background: var(--bg-card);
+
+    border-radius: 15px;
+
+    padding: 25px;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+    margin-top: 20px;
+
+}
+
+/* ==========================================================================
+   DASHBOARD
+========================================================================== */
+
+.dashboard-cards {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+    gap: 20px;
+
+    margin-bottom: 30px;
+
+}
+
+.card-dashboard h3 {
+
+    margin: 0;
+
+    color: var(--text-soft);
+
+    font-size: 1rem;
+
+}
+
+.card-dashboard p {
+
+    margin-top: 15px;
+
+    font-size: 2rem;
+
+    font-weight: bold;
+
+    color: var(--primary);
+
+}
+
+/* ==========================================================================
+   TABLAS
+========================================================================== */
+
+.tabla-gestion {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 0.95rem;
+
+}
+
+.tabla-gestion th {
+
+    text-align: left;
+
+    padding: 15px;
+
+    background-color: rgba(148,163,184,0.08);
+
+    color: var(--text-soft);
+
+    border-bottom: 2px solid var(--border-color);
+
+    text-transform: uppercase;
+
+    font-size: 0.75rem;
+
+    letter-spacing: 0.05em;
+
+}
+
+.tabla-gestion td {
+
+    padding: 15px;
+
+    border-bottom: 1px solid var(--border-color);
+
+    color: var(--text-main);
+
+}
+
+.tabla-gestion tr:hover {
+
+    background-color: rgba(148,163,184,0.06);
+
+}
+
+/* ==========================================================================
+   BADGES
+========================================================================== */
+
+.badge-rol {
+
+    padding: 5px 10px;
+
+    border-radius: 6px;
+
+    font-size: 0.75rem;
+
+    font-weight: bold;
+
+    background: rgba(148,163,184,0.12);
+
+    color: var(--text-main);
+
+}
+
+/* ==========================================================================
+   BOTONES
+========================================================================== */
+
+.btn-main-blue {
+
+    background: var(--primary);
+
+    color: white;
+
+    padding: 12px 24px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+    border: none;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    display: inline-block;
+
+}
+
+.btn-main-blue:hover {
+
+    opacity: 0.9;
+
+}
+
+.btn-edit {
+
+    color: var(--primary);
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+    margin-right: 15px;
+
+}
+
+.btn-delete {
+
+    color: #ef4444;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+
+    text-decoration: underline;
+
+}
+
+/* ==========================================================================
+   FORMULARIOS
+========================================================================== */
+
+.form-group {
+
+    margin-bottom: 20px;
+
+}
+
+.form-group label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-weight: 600;
+
+    color: var(--text-main);
+
+}
+
+.form-control {
+
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    background: var(--bg-card);
+
+    color: var(--text-main);
+
+}
+
+.form-control:focus {
+
+    outline: none;
+
+    border-color: var(--primary);
+
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+
+}
+
+/* ==========================================================================
+   ALERTAS
+========================================================================== */
+
+.alert {
+
+    padding: 12px 15px;
+
+    margin-bottom: 20px;
+
+    border-radius: 8px;
+
+    font-size: 0.9rem;
+
+}
+
+.alert-success {
+
+    background: #dcfce7;
+
+    color: #166534;
+
+    border: 1px solid #bbf7d0;
+
+}
+
+.alert-error {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+
+    border: 1px solid #fecaca;
+
+}
+
+/* ==========================================================================
+   ACCIONES HEADER
+========================================================================== */
+
+.acciones-header {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-bottom: 20px;
+
+}
+
+/* ==========================================================================
+   JORNADA VISUAL
+========================================================================== */
+
+.usuario-info {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 30px;
+
+}
+
+.avatar {
+
+    width: 65px;
+
+    height: 65px;
+
+    border-radius: 50%;
+
+    background: var(--primary);
+
+    color: white;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+}
+
+.estado-jornada {
+
+    display: inline-block;
+
+    margin-top: 5px;
+
+    background: #dcfce7;
+
+    color: #16a34a;
+
+    padding: 5px 12px;
+
+    border-radius: 20px;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+}
+
+/* BARRA */
+
+.barra-jornada {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 30px;
+
+    background: #1e40af;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    margin-bottom: 15px;
+
+}
+
+.progreso-jornada {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    height: 100%;
+
+    background: #3b82f6;
+
+    transition: width 0.5s;
+
+}
+
+.descanso-bloque {
+
+    position: absolute;
+
+    left: 67%;
+
+    top: 0;
+
+    width: 12%;
+
+    height: 100%;
+
+    background: #1d4ed8;
+
+    border-left: 2px dashed orange;
+
+    border-right: 2px dashed orange;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: orange;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+}
+
+/* HORAS */
+
+.horas-jornada {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 10px;
+
+    color: var(--text-soft);
+
+    font-weight: 600;
+
+    font-size: 14px;
+
+}
+
+/* ==========================================================================
+   RESPONSIVE
+========================================================================== */
+
+@media screen and (max-width: 900px) {
+
+    .sidebar {
+
+        width: 100%;
+
+        height: auto;
+
+        position: relative;
+
+        padding: 15px;
+
+    }
+
+    .sidebar nav {
+
+        flex-direction: row;
+
+        flex-wrap: wrap;
+
+        gap: 10px;
+
+    }
+
+    .sidebar nav a {
+
+        flex: 1;
+
+        text-align: center;
+
+        font-size: 13px;
+
+    }
+
+    .content-wrapper {
+
+        margin-left: 0;
+
+        width: 100%;
+
+    }
+
+    .top-header {
+
+        padding: 15px;
+
+        text-align: center;
+
+    }
+
+    .main-content {
+
+        padding: 15px;
+
+    }
+
+    .dashboard-cards {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .tabla-gestion {
+
+        display: block;
+
+        overflow-x: auto;
+
+        white-space: nowrap;
+
+    }
+
+    .fichaje-card,
+    .jornada-card {
+
+        padding: 20px;
+
+    }
+
+    .horas-jornada {
+
+        flex-direction: column;
+
+        gap: 10px;
+
+    }
+
+    .usuario-info {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+    .btn-main-blue {
+
+        width: 100%;
+
+        text-align: center;
+
+    }
+
+}
+
+/* ==========================================================================
+   MÓVILES PEQUEÑOS
+========================================================================== */
+
+@media screen and (max-width: 500px) {
+
+    h1 {
+
+        font-size: 1.5rem;
+
+    }
+
+    .avatar {
+
+        width: 55px;
+
+        height: 55px;
+
+        font-size: 22px;
+
+    }
+
+    .barra-jornada {
+
+        height: 24px;
+
+    }
+
+    .descanso-bloque {
+
+        font-size: 9px;
+
+    }
+
+    .card-dashboard p {
+
+        font-size: 1.5rem;
+
+    }
+
+}
+
+/*=========================================================================
+    VACACIONES
+=========================================================================*/
+
+.vacaciones-layout{
+
+    display:grid;
+
+    grid-template-columns:320px 1fr;
+
+    gap:25px;
+
+    align-items:start;
+
+    margin-top:20px;
+
+}
+
+.vacaciones-sidebar{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+.vacaciones-calendar{
+
+    width:100%;
+
+}
+
+.btn-full{
+
+    width:100%;
+
+}
+
+/*=========================================================================
+    CALENDARIO
+=========================================================================*/
+
+#calendar{
+
+    width:100%;
+
+}
+
+.fc{
+
+    font-family:'Roboto',sans-serif;
+
+}
+
+.fc-toolbar-title{
+
+    font-size:24px !important;
+
+    font-weight:700;
+
+}
+
+.fc-button{
+
+    background:var(--primary)!important;
+
+    border:none!important;
+
+    border-radius:8px!important;
+
+    padding:8px 14px!important;
+
+}
+
+.fc-button:hover{
+
+    opacity:.9;
+
+}
+
+.fc-button-active{
+
+    background:var(--accent)!important;
+
+}
+
+.fc-day-today{
+
+    background:rgba(243,156,18,.15)!important;
+
+}
+
+.fc-daygrid-day{
+
+    transition:.15s;
+
+    cursor:pointer;
+
+}
+
+.fc-daygrid-day:hover{
+
+    background:rgba(37,99,235,.06);
+
+}
+
+.fc-event{
+
+    border:none!important;
+
+    border-radius:6px!important;
+
+    font-size:12px!important;
+
+    font-weight:600;
+
+    padding:2px 4px!important;
+
+}
+
+.fc-scrollgrid{
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th{
+
+    border-color:var(--border-color);
+
+}
+
+/*=========================================================================
+    PANEL EVENTOS
+=========================================================================*/
+
+.panel-eventos{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+    max-height:650px;
+
+    overflow-y:auto;
+
+}
+
+.panel-eventos::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+.panel-eventos::-webkit-scrollbar-thumb{
+
+    background:#cbd5e1;
+
+    border-radius:20px;
+
+}
+
+.lista-evento{
+
+    background:var(--bg-card);
+
+    border:1px solid var(--border-color);
+
+    border-left:5px solid var(--primary);
+
+    border-radius:10px;
+
+    padding:14px;
+
+    transition:.2s;
+
+}
+
+.lista-evento:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 6px 15px rgba(0,0,0,.08);
+
+}
+
+.lista-evento strong{
+
+    display:block;
+
+    margin-bottom:6px;
+
+}
+
+.lista-evento small{
+
+    color:var(--text-soft);
+
+}
+
+/*=========================================================================
+    FORMULARIO
+=========================================================================*/
+
+.oculto{
+
+    display:none;
+
+}
+
+#empleadoDiv,
+#empresaDiv,
+#finDiv,
+#fechaFestivo{
+
+    transition:.2s;
+
+}
+
+.leyenda-vacaciones{
+
+    margin-top:20px;
+
+    line-height:30px;
+
+}
+
+.leyenda-verde{
+
+    color:#22c55e;
+
+    font-size:18px;
+
+}
+
+.leyenda-naranja{
+
+    color:#f59e0b;
+
+    font-size:18px;
+
+}
+/*=========================================================================
+    DRAWER LATERAL
+=========================================================================*/
+
+.overlay-vacaciones{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.45);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:.25s;
+
+    z-index:9998;
+
+}
+
+.overlay-vacaciones.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+}
+
+.drawer-vacaciones{
+
+    position:fixed;
+
+    top:0;
+
+    right:-430px;
+
+    width:420px;
+
+    height:100%;
+
+    background:#fff;
+
+    padding:30px;
+
+    overflow-y:auto;
+
+    z-index:9999;
+
+    transition:.35s;
+
+    box-shadow:-8px 0 25px rgba(0,0,0,.25);
+
+}
+
+.drawer-vacaciones.show{
+
+    right:0;
+
+}
+
+.drawer-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.drawer-header h2{
+
+    margin:0;
+
+}
+
+.drawer-close{
+
+    background:none;
+
+    border:none;
+
+    font-size:28px;
+
+    cursor:pointer;
+
+    line-height:1;
+
+}
+
+.drawer-footer{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:15px;
+
+    margin-top:30px;
+
+}
+
+.drawer-footer .btn-delete{
+
+    background:#e5e7eb;
+
+    color:#374151;
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:10px 18px;
+
+    cursor:pointer;
+
+    text-decoration:none;
+
+}
+
+.drawer-footer .btn-delete:hover{
+
+    background:#d1d5db;
+
+}
+
+/*=========================================================================
+    DARK MODE
+=========================================================================*/
+
+body.dark-mode .drawer-vacaciones{
+
+    background:#0f172a;
+
+    color:#fff;
+
+}
+
+body.dark-mode .drawer-close{
+
+    color:#fff;
+
+}
+
+body.dark-mode .lista-evento{
+
+    background:#1e293b;
+
+    border-color:#334155;
+
+}
+
+body.dark-mode .drawer-footer .btn-delete{
+
+    background:#334155;
+
+    color:#fff;
+
+}
+
+body.dark-mode .drawer-footer .btn-delete:hover{
+
+    background:#475569;
+
+}
+
+body.dark-mode .fc-theme-standard td,
+body.dark-mode .fc-theme-standard th{
+
+    border-color:#334155;
+
+}
+
+body.dark-mode .fc-day-today{
+
+    background:rgba(245,158,11,.15)!important;
+
+}
+
+/*=========================================================================
+    RESPONSIVE
+=========================================================================*/
+
+@media (max-width:1100px){
+
+    .vacaciones-layout{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .vacaciones-sidebar{
+
+        order:2;
+
+    }
+
+    .vacaciones-calendar{
+
+        order:1;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .drawer-vacaciones{
+
+        width:100%;
+
+        right:-100%;
+
+    }
+
+    .fc-toolbar{
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:10px;
+
+    }
+
+    .fc-toolbar-title{
+
+        font-size:20px !important;
+
+    }
+
+}
+
+@media (max-width:600px){
+
+    .vacaciones-sidebar{
+
+        gap:15px;
+
+    }
+
+    .lista-evento{
+
+        padding:10px;
+
+    }
+
+}
