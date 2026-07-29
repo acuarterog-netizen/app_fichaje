@@ -723,11 +723,9 @@ document
             opcion.hidden = true;
 
         }
-
     });
 
 });
-
 document
 .querySelectorAll('[onclick^="abrirDrawer"]')
 .forEach(function(boton){
