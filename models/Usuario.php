@@ -242,25 +242,93 @@ class Usuario {
 
     }
 
-        /* ==========================================================================
-       ELIMINAR USUARIO
-    ========================================================================== */
+      /* ==========================================================================
+   ELIMINAR USUARIO
+========================================================================== */
 
-    public function eliminarUsuario($id){
+public function eliminarUsuario($id){
 
-        $sql = "DELETE
-                FROM ".$this->table."
-                WHERE id = :id";
+    try{
 
-        $stmt = $this->conexion->prepare($sql);
+        $this->conexion->beginTransaction();
 
-        return $stmt->execute([
+        /*
+        ==========================================
+        VACACIONES
+        ==========================================
+        */
+
+        $stmt = $this->conexion->prepare("
+            DELETE FROM vacaciones
+            WHERE usuario_id = :id
+        ");
+
+        $stmt->execute([
 
             ':id'=>$id
 
         ]);
 
+        /*
+        ==========================================
+        FICHAJES
+        ==========================================
+        */
+
+        $stmt = $this->conexion->prepare("
+            DELETE FROM fichajes
+            WHERE usuario_id = :id
+        ");
+
+        $stmt->execute([
+
+            ':id'=>$id
+
+        ]);
+
+        /*
+        ==========================================
+        AQUÍ PODRÁS AÑADIR MÁS TABLAS
+        ==========================================
+
+        Ejemplo:
+
+        DELETE FROM incidencias WHERE usuario_id=:id
+        DELETE FROM horas_extra WHERE usuario_id=:id
+        DELETE FROM solicitudes WHERE usuario_id=:id
+
+        */
+
+        /*
+        ==========================================
+        ELIMINAR USUARIO
+        ==========================================
+        */
+
+        $stmt = $this->conexion->prepare("
+            DELETE FROM usuarios
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+
+            ':id'=>$id
+
+        ]);
+
+        $this->conexion->commit();
+
+        return true;
+
+    }catch(Exception $e){
+
+        $this->conexion->rollBack();
+
+        return false;
+
     }
+
+}
 
     /* ==========================================================================
        ACTUALIZAR PERFIL
