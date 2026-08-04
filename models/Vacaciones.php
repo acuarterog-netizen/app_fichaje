@@ -74,33 +74,35 @@ class Vacaciones {
 
     public function obtenerVacaciones(){
 
-        $sql = "SELECT
+    $sql = "SELECT
 
-                    vacaciones.*,
+                vacaciones.*,
 
-                    usuarios.nombre,
+                usuarios.id AS usuario_id,
 
-                    empresas.nombre AS empresa
+                usuarios.nombre,
 
-                FROM vacaciones
+                usuarios.empresa_id,
 
-                INNER JOIN usuarios
+                empresas.nombre AS empresa
 
-                ON vacaciones.usuario_id = usuarios.id
+            FROM vacaciones
 
-                LEFT JOIN empresas
+            INNER JOIN usuarios
+            ON vacaciones.usuario_id = usuarios.id
 
-                ON usuarios.empresa_id = empresas.id
+            LEFT JOIN empresas
+            ON usuarios.empresa_id = empresas.id
 
-                ORDER BY fecha_inicio DESC";
+            ORDER BY fecha_inicio DESC";
 
-        $stmt = $this->conexion->prepare($sql);
+    $stmt = $this->conexion->prepare($sql);
 
-        $stmt->execute();
+    $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    }
+}
 
     /* ==========================================================
        VACACIONES POR EMPLEADO
@@ -370,6 +372,7 @@ class Vacaciones {
                 $diasVacaciones[$fecha] = [
 
                     "empleados" => [],
+                    "usuarios"  => [],
                     "empresa"   => $v["empresa"]
 
                 ];
@@ -377,6 +380,7 @@ class Vacaciones {
             }
 
             $diasVacaciones[$fecha]["empleados"][] = $v["nombre"];
+            $diasVacaciones[$fecha]["usuarios"][] = (int)$v["usuario_id"];
 
             $inicio = strtotime("+1 day",$inicio);
 
@@ -386,11 +390,11 @@ class Vacaciones {
 
     /*
     =============================================
-    CREAR UN EVENTO POR CADA DÍA
+    CREAR EVENTOS DE VACACIONES
     =============================================
     */
 
-    foreach($diasVacaciones as $fecha=>$datos){
+    foreach($diasVacaciones as $fecha => $datos){
 
         $eventos[] = [
 
@@ -402,7 +406,7 @@ class Vacaciones {
 
             "end"   => date(
                 "Y-m-d",
-                strtotime($fecha."+1 day")
+                strtotime($fecha." +1 day")
             ),
 
             "color" => "#22c55e",
@@ -415,7 +419,9 @@ class Vacaciones {
 
                 "empresa"   => $datos["empresa"],
 
-                "empleados" => $datos["empleados"]
+                "empleados" => $datos["empleados"],
+
+                "usuarios"  => $datos["usuarios"]
 
             ]
 
@@ -454,7 +460,7 @@ class Vacaciones {
 
                 "empresa" => $f["empresa"] ?? "",
 
-                "motivo" => $f["motivo"]
+                "motivo" => $f["motivo"] ?? ""
 
             ]
 

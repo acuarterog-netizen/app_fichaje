@@ -121,7 +121,7 @@ href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
 
                     <?php foreach($empresas as $empresa): ?>
 
-                        <option value="<?php echo $empresa["nombre"]; ?>">
+                        <option value="<?php echo $empresa["id"]; ?>">
 
                             <?php echo $empresa["nombre"]; ?>
 
@@ -138,22 +138,24 @@ href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
                 <label>Empleado</label>
 
                 <select
-                    id="filtroEmpleadoCalendario"
-                    class="form-control">
+    id="filtroEmpleadoCalendario"
+    class="form-control">
 
-                    <option value="">Todos</option>
+    <option value="">Todos</option>
 
-                    <?php foreach($usuarios as $u): ?>
+    <?php foreach($usuarios as $u): ?>
 
-                        <option value="<?php echo $u["nombre"]; ?>">
+        <option
+            value="<?php echo $u["id"]; ?>"
+            data-empresa="<?php echo $u["empresa_id"]; ?>">
 
-                            <?php echo $u["nombre"]; ?>
+            <?php echo $u["nombre"]; ?>
 
-                        </option>
+        </option>
 
-                    <?php endforeach; ?>
+    <?php endforeach; ?>
 
-                </select>
+</select>
 
             </div>
 
@@ -242,25 +244,25 @@ value="vacaciones">
     <label>Empleado</label>
 
     <select
-        id="usuario_id"
-        name="usuario_id"
-        class="form-control">
+    id="usuario_id"
+    name="usuario_id"
+    class="form-control">
 
-        <option value="">Seleccione un empleado</option>
+    <option value="">Seleccione un empleado</option>
 
-        <?php foreach($usuarios as $u): ?>
+    <?php foreach($usuarios as $u): ?>
 
-            <option
-                value="<?php echo $u["id"]; ?>"
-                data-empresa="<?php echo $u["empresa_id"]; ?>">
+        <option
+            value="<?php echo $u["id"]; ?>"
+            data-empresa="<?php echo $u["empresa_id"]; ?>">
 
-                <?php echo $u["nombre"]; ?>
+            <?php echo $u["nombre"]; ?>
 
-            </option>
+        </option>
 
-        <?php endforeach; ?>
+    <?php endforeach; ?>
 
-    </select>
+</select>
 
 </div>
 
@@ -553,9 +555,22 @@ document.addEventListener("DOMContentLoaded",function(){
 
                     extendedProps:{
 
-                        empresa:"<?= addslashes($evento["extendedProps"]["empresa"] ?? "") ?>",
+                        extendedProps:{
 
-                        usuario:"<?= addslashes($evento["extendedProps"]["usuario"] ?? "") ?>"
+    tipo:"<?= $evento["extendedProps"]["tipo"] ?? "" ?>",
+
+    empresa:"<?= addslashes($evento["extendedProps"]["empresa"] ?? "") ?>",
+
+    empleados: <?= json_encode($evento["extendedProps"]["empleados"] ?? []) ?>,
+
+    usuarios: <?= json_encode($evento["extendedProps"]["usuarios"] ?? []) ?>,
+
+    motivo:"<?= addslashes($evento["extendedProps"]["motivo"] ?? "") ?>"
+
+}
+console.log(
+    <?= json_encode($evento["extendedProps"] ?? []) ?>
+);
 
                     }
 
@@ -585,32 +600,29 @@ document.addEventListener("DOMContentLoaded",function(){
 
     if(empresaVacaciones && usuario){
 
-        empresaVacaciones.addEventListener("change",function(){
+        const opcionesUsuarios = Array.from(usuario.options);
 
-            usuario.value="";
+empresaVacaciones.addEventListener("change", function () {
 
-            Array.from(usuario.options).forEach(function(opcion){
+    const empresa = this.value;
 
-                if(opcion.value==""){
+    usuario.innerHTML = '<option value="">Seleccione un empleado</option>';
 
-                    opcion.hidden=false;
-                    return;
+    opcionesUsuarios.forEach(function(opcion){
 
-                }
+        if(opcion.value == ""){
+            return;
+        }
 
-                if(opcion.dataset.empresa==empresaVacaciones.value){
+        if(opcion.dataset.empresa == empresa){
 
-                    opcion.hidden=false;
+            usuario.appendChild(opcion.cloneNode(true));
 
-                }else{
+        }
 
-                    opcion.hidden=true;
+    });
 
-                }
-
-            });
-
-        });
+});
 
     }
 
@@ -628,13 +640,49 @@ document.addEventListener("DOMContentLoaded",function(){
 
     filtrarCalendario();
 
-    document
-        .getElementById("filtroEmpresaCalendario")
-        .addEventListener("change",filtrarCalendario);
+    const filtroEmpresaCalendario =
+    document.getElementById("filtroEmpresaCalendario");
 
-    document
-        .getElementById("filtroEmpleadoCalendario")
-        .addEventListener("change",filtrarCalendario);
+const filtroEmpleadoCalendario =
+    document.getElementById("filtroEmpleadoCalendario");
+
+const empleadosOriginales =
+    Array.from(filtroEmpleadoCalendario.options);
+
+filtroEmpresaCalendario.addEventListener("change", function(){
+
+    const empresa = this.value;
+
+    filtroEmpleadoCalendario.innerHTML =
+        '<option value="">Todos</option>';
+
+    empleadosOriginales.forEach(function(opcion){
+
+        if(opcion.value==""){
+            return;
+        }
+
+        if(
+            empresa=="" ||
+            opcion.dataset.empresa==empresa
+        ){
+
+            filtroEmpleadoCalendario.appendChild(
+                opcion.cloneNode(true)
+            );
+
+        }
+
+    });
+
+    filtrarCalendario();
+
+});
+
+filtroEmpleadoCalendario.addEventListener(
+    "change",
+    filtrarCalendario
+);
 
 });
 
@@ -665,14 +713,22 @@ function filtrarCalendario(){
 
         }
 
+       if(empleado != ""){
+
+    if(evento.extendedProps.tipo == "vacaciones"){
+
         if(
-            empleado != "" &&
-            evento.extendedProps.usuario != empleado
+            !evento.extendedProps.usuarios ||
+            !evento.extendedProps.usuarios.includes(parseInt(empleado))
         ){
 
             mostrar = false;
 
         }
+
+    }
+
+}
 
         if(mostrar){
 
@@ -694,38 +750,6 @@ RESETEAR DRAWER
 ==========================================
 */
 
-document
-.getElementById("empresaVacaciones")
-.addEventListener("change",function(){
-
-    const empresaSeleccionada = this.value;
-
-    const usuario =
-        document.getElementById("usuario_id");
-
-    usuario.value = "";
-
-    Array.from(usuario.options).forEach(function(opcion){
-
-        if(opcion.value==""){
-
-            opcion.hidden = false;
-            return;
-
-        }
-
-        if(opcion.dataset.empresa == empresaSeleccionada){
-
-            opcion.hidden = false;
-
-        }else{
-
-            opcion.hidden = true;
-
-        }
-    });
-
-});
 document
 .querySelectorAll('[onclick^="abrirDrawer"]')
 .forEach(function(boton){
