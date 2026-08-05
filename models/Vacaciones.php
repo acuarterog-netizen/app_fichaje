@@ -373,14 +373,20 @@ class Vacaciones {
 
                     "empleados" => [],
                     "usuarios"  => [],
-                    "empresa"   => $v["empresa"]
 
                 ];
 
             }
 
-            $diasVacaciones[$fecha]["empleados"][] = $v["nombre"];
-            $diasVacaciones[$fecha]["usuarios"][] = (int)$v["usuario_id"];
+            $diasVacaciones[$fecha]["vacaciones"][] = [
+
+    "id" => $v["id"],
+    "empleado" => $v["nombre"],
+    "empresa" => $v["empresa"]
+
+];
+
+$diasVacaciones[$fecha]["usuarios"][] = (int)$v["usuario_id"];
 
             $inicio = strtotime("+1 day",$inicio);
 
@@ -415,15 +421,13 @@ class Vacaciones {
 
             "extendedProps" => [
 
-                "tipo"      => "vacaciones",
+    "tipo" => "vacaciones",
 
-                "empresa"   => $datos["empresa"],
+    "vacaciones" => $datos["vacaciones"],
 
-                "empleados" => $datos["empleados"],
+    "usuarios" => array_values(array_unique($datos["usuarios"]))
 
-                "usuarios"  => $datos["usuarios"]
-
-            ]
+]
 
         ];
 
@@ -765,6 +769,41 @@ public function obtenerResumenEmpleado($usuario_id){
 public function totalEventos(){
 
     return count($this->obtenerEventosCalendario());
+
+}
+
+public function obtenerVacacionesPorFecha($fecha){
+
+    $sql = "SELECT
+
+                vacaciones.id,
+
+                usuarios.nombre,
+
+                empresas.nombre AS empresa
+
+            FROM vacaciones
+
+            INNER JOIN usuarios
+                ON vacaciones.usuario_id = usuarios.id
+
+            LEFT JOIN empresas
+                ON usuarios.empresa_id = empresas.id
+
+            WHERE :fecha BETWEEN vacaciones.fecha_inicio
+                             AND vacaciones.fecha_fin
+
+            ORDER BY usuarios.nombre";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+
+        ":fecha"=>$fecha
+
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 }
 }
