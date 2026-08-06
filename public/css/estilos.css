@@ -1342,3 +1342,35 @@ body.dark-mode .fc-day-today{
     }
 
 }
+
+.lista-evento{
+
+    padding:12px;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:8px;
+
+    margin-bottom:12px;
+
+    background:#fff;
+
+}
+
+.lista-evento strong{
+
+    display:block;
+
+    font-size:15px;
+
+    color:#111827;
+
+}
+
+.lista-evento small{
+
+    color:#6b7280;
+
+    font-size:13px;
+
+}

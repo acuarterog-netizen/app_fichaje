@@ -1,4 +1,3 @@
--- Active: 1778325147226@@localhost@3306
 <?php
 class Database {
     private $host = "localhost";

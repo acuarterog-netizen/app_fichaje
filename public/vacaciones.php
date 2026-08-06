@@ -371,6 +371,26 @@ value="vacaciones">
 
 </div>
 
+<div class="drawer-vacaciones" id="drawerDia">
+
+    <div class="drawer-header">
+
+        <h2 id="tituloDrawerDia">Vacaciones</h2>
+
+        <button
+            class="drawer-close"
+            onclick="cerrarDrawerDia()">
+
+        </button>
+
+    </div>
+
+    <div id="contenidoDrawerDia" style="padding:20px;">
+
+    </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
 <script>
@@ -426,6 +446,16 @@ function cerrarDrawer(){
 
 }
 
+function cerrarDrawerDia(){
+
+    document.getElementById("drawerDia")
+        .classList.remove("show");
+
+    document.getElementById("overlay")
+        .classList.remove("show");
+
+}
+
 document.addEventListener("DOMContentLoaded",function(){
 
     calendar = new FullCalendar.Calendar(
@@ -468,105 +498,68 @@ document.addEventListener("DOMContentLoaded",function(){
 
             },
 
-           eventClick:function(info){
+            dateClick:function(info){
 
-    if(info.event.extendedProps.tipo!="vacaciones"){
-        return;
-    }
-
-    fetch("vacacionesDia.php?fecha=" + encodeURIComponent(info.event.startStr))
+    fetch("/app_fichaje/public/vacacionesDia.php?fecha="+encodeURIComponent(info.dateStr))
 
     .then(response => response.json())
 
     .then(function(datos){
 
-        let html="";
+        let html = "";
 
-        if(datos.length==0){
+        if(datos.length === 0){
 
-            html="<p>No hay vacaciones.</p>";
+            html = "<p>No hay empleados de vacaciones este día.</p>";
 
         }else{
 
             datos.forEach(function(v){
 
                 html += `
-                <div class="lista-evento">
+                    <div class="lista-evento">
 
-                    <h3>${v.nombre}</h3>
+                        <strong>${v.nombre}</strong><br>
 
-                    <p><strong>Empresa:</strong> ${v.empresa}</p>
-
-                    <div style="margin-top:10px;display:flex;gap:10px;">
-
-                        <button
-                            class="btn-main-blue"
-                            onclick="editarVacacion(${v.id})">
-
-                            Editar
-
-                        </button>
-
-                        <button
-                            class="btn-delete"
-                            onclick="eliminarVacacion(${v.id})">
-
-                            Eliminar
-
-                        </button>
+                        <small>${v.empresa}</small>
 
                     </div>
-
-                </div>
                 `;
 
             });
 
         }
 
-        document.getElementById("tituloModalDia").innerHTML =
-            "Vacaciones - " + info.event.startStr;
+        const titulo = document.getElementById("tituloDrawerDia");
+        const contenido = document.getElementById("contenidoDrawerDia");
+        const drawer = document.getElementById("drawerDia");
+        const overlay = document.getElementById("overlay");
 
-        document.getElementById("listaVacacionesDia").innerHTML =
-            html;
+        if(!titulo || !contenido || !drawer){
+            console.error("No existe el drawer de vacaciones del día.");
+            return;
+        }
 
-        document.getElementById("modalVacacionesDia")
-            .classList.add("show");
+        titulo.innerHTML = "Vacaciones - " + info.dateStr;
+        contenido.innerHTML = html;
 
-    });
+        drawer.classList.add("show");
+
+        if(overlay){
+            overlay.classList.add("show");
+        }
+
+    })
+
+    .catch(function(error){
+
+    console.error(error);
+
+    alert(error);
+
+});
 
 },
-
-        document.getElementById("listaVacacionesDia").innerHTML=html;
-
-        document.getElementById("tituloModalDia").innerHTML=
-            "Vacaciones del "+info.event.startStr;
-
-        document.getElementById("modalVacacionesDia")
-            .classList.add("show");
-
-    });
-
-},
-
-            dateClick:function(info){
-
-                if(document.getElementById("tipo").value=="festivo"){
-
-                    document.getElementById("fecha").value =
-                        info.dateStr;
-
-                }else{
-
-                    document.getElementById("fecha_inicio").value =
-                        info.dateStr;
-
-                    document.getElementById("fecha_fin").value =
-                        info.dateStr;
-
-                }
-
-            },
 
             select:function(info){
 
@@ -624,11 +617,11 @@ document.addEventListener("DOMContentLoaded",function(){
 
                 },
 
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
 
             ]
 
-        }
+                }
 
     );
 
@@ -732,7 +725,7 @@ filtroEmpleadoCalendario.addEventListener(
     filtrarCalendario
 );
 
-});
+                });
 
 /*
 ==========================================
@@ -791,60 +784,8 @@ function filtrarCalendario(){
     });
 
 }
-function cerrarModalDia(){
 
-    document
-        .getElementById("modalVacacionesDia")
-        .classList.remove("show");
 
-}
-
-function mostrarVacacionesDia(fecha,vacaciones){
-
-    document.getElementById("tituloModalDia").innerHTML =
-        "Vacaciones - " + fecha;
-
-    let html = "";
-
-    vacaciones.forEach(function(v){
-
-        html += `
-        <div class="lista-evento">
-
-            <strong>${v.nombre}</strong><br>
-
-            <small>${v.empresa}</small>
-
-            <div style="margin-top:10px;display:flex;gap:10px;">
-
-                <button
-                    class="btn-main-blue"
-                    onclick="editarVacacion(${v.id})">
-
-                    Editar
-
-                </button>
-
-                <button
-                    class="btn-delete"
-                    onclick="eliminarVacacion(${v.id})">
-
-                    Eliminar
-
-                </button>
-
-            </div>
-
-        </div>
-        `;
-
-    });
-
-    document.getElementById("listaVacacionesDia").innerHTML = html;
-
-    document.getElementById("modalVacacionesDia").classList.add("show");
-
-}
 
 function editarVacacion(id){
 
@@ -902,27 +843,6 @@ document
 });
 
 </script>
-<div id="modalVacacionesDia" class="modal-vacaciones">
-
-    <div class="modal-vacaciones-content">
-
-        <h2 id="tituloModalDia">Vacaciones</h2>
-
-        <div id="listaVacacionesDia"></div>
-
-        <br>
-
-        <button
-            class="btn-main-blue"
-            onclick="cerrarModalDia()">
-
-            Cerrar
-
-        </button>
-
-    </div>
-
-</div>
 <?php
 
 include "../views/layouts/footer.php";
