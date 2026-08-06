@@ -131,28 +131,6 @@ class Vacaciones {
     }
 
     /* ==========================================================
-       ELIMINAR VACACIONES
-    ========================================================== */
-
-    public function eliminarVacaciones($id){
-
-        $sql = "DELETE
-
-                FROM vacaciones
-
-                WHERE id=:id";
-
-        $stmt = $this->conexion->prepare($sql);
-
-        return $stmt->execute([
-
-            ':id'=>$id
-
-        ]);
-
-    }
-
-    /* ==========================================================
        CREAR FESTIVO
     ========================================================== */
 
@@ -776,10 +754,9 @@ public function obtenerVacacionesPorFecha($fecha){
 
     $sql = "SELECT
 
-                vacaciones.id,
-
+                MIN(vacaciones.id) AS id,
+                usuarios.id AS usuario_id,
                 usuarios.nombre,
-
                 empresas.nombre AS empresa
 
             FROM vacaciones
@@ -793,17 +770,31 @@ public function obtenerVacacionesPorFecha($fecha){
             WHERE :fecha BETWEEN vacaciones.fecha_inicio
                              AND vacaciones.fecha_fin
 
+            GROUP BY usuarios.id, usuarios.nombre, empresas.nombre
+
             ORDER BY usuarios.nombre";
 
     $stmt = $this->conexion->prepare($sql);
 
     $stmt->execute([
-
         ":fecha"=>$fecha
-
     ]);
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 }
+
+public function eliminarVacaciones($id){
+
+    $sql = "DELETE FROM vacaciones
+            WHERE id = :id";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":id"=>$id
+    ]);
+
+}
+
 }

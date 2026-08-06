@@ -16,6 +16,15 @@ if(
 }
 
 $vacacionesModel = new Vacaciones();
+if(isset($_GET["eliminar"])){
+
+    $vacacionesModel->eliminarVacaciones($_GET["eliminar"]);
+
+    header("Location: vacaciones.php");
+
+    exit;
+
+}
 $usuarioModel    = new Usuario();
 $empresaModel    = new Empresa();
 
@@ -381,11 +390,25 @@ value="vacaciones">
             class="drawer-close"
             onclick="cerrarDrawerDia()">
 
+            ×
+
         </button>
 
     </div>
 
     <div id="contenidoDrawerDia" style="padding:20px;">
+
+    </div>
+
+    <div class="drawer-footer">
+
+        <button
+            class="btn-main-blue"
+            onclick="cerrarDrawerDia()">
+
+            Volver
+
+        </button>
 
     </div>
 
@@ -517,14 +540,22 @@ document.addEventListener("DOMContentLoaded",function(){
             datos.forEach(function(v){
 
                 html += `
-                    <div class="lista-evento">
+<div class="lista-evento">
 
-                        <strong>${v.nombre}</strong><br>
+    <strong>${v.nombre}</strong><br>
 
-                        <small>${v.empresa}</small>
+    <small>${v.empresa}</small>
 
-                    </div>
-                `;
+    <button
+        class="btn-delete"
+        onclick="eliminarVacaciones(${v.id})">
+
+        Eliminar
+
+    </button>
+
+</div>
+`;
 
             });
 
@@ -841,8 +872,18 @@ document
     });
 
 });
+function eliminarVacaciones(id){
 
+    if(!confirm("¿Eliminar estas vacaciones?")){
+        return;
+    }
+
+    window.location =
+        "vacaciones.php?eliminar=" + id;
+
+}
 </script>
+
 <?php
 
 include "../views/layouts/footer.php";
