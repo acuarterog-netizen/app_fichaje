@@ -144,13 +144,13 @@ foreach($fichajes as $fichaje) {
 
             <td>' . $fichaje['fecha'] . '</td>
 
-            <td>' . substr($fichaje['hora_entrada'], 0, 5) . '</td>
+            <td>' . (!empty($fichaje['hora_entrada']) ? substr($fichaje['hora_entrada'],0,5) : '-') . '</td>
 
-            <td>' . substr($fichaje['inicio_descanso'], 0, 5) . '</td>
+<td>' . (!empty($fichaje['inicio_descanso']) ? substr($fichaje['inicio_descanso'],0,5) : '-') . '</td>
 
-            <td>' . substr($fichaje['fin_descanso'], 0, 5) . '</td>
+<td>' . (!empty($fichaje['fin_descanso']) ? substr($fichaje['fin_descanso'],0,5) : '-') . '</td>
 
-            <td>' . substr($fichaje['hora_salida'], 0, 5) . '</td>
+<td>' . (!empty($fichaje['hora_salida']) ? substr($fichaje['hora_salida'],0,5) : '-') . '</td>
 
         </tr>
 
@@ -168,6 +168,7 @@ $html .= '
 /* ==========================================================================
    GENERAR PDF
 ========================================================================== */
+ob_clean();
 
 $dompdf = new Dompdf();
 
@@ -184,3 +185,5 @@ $dompdf->stream(
     ["Attachment" => true]
 
 );
+
+exit;
