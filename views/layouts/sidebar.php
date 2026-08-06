@@ -66,6 +66,25 @@ $pagina = basename($_SERVER['PHP_SELF']);
 
         <?php endif; ?>
 
+<!-- BAJAS -->
+
+<?php
+if(
+    $_SESSION['usuario']['rol']=="admin"
+    ||
+    $_SESSION['usuario']['rol']=="encargado"
+):
+?>
+
+<a
+    href="bajas.php"
+    class="<?php if($pagina=="bajas.php") echo "active"; ?>"
+>
+    🤒 Bajas
+</a>
+
+<?php endif; ?>
+
         <!-- EMPRESAS -->
 
         <?php if($_SESSION['usuario']['rol']=="admin"): ?>
