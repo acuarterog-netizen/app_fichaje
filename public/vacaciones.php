@@ -18,7 +18,12 @@ if(
 $vacacionesModel = new Vacaciones();
 if(isset($_GET["eliminar"])){
 
-    $vacacionesModel->eliminarVacaciones($_GET["eliminar"]);
+    $vacacionesModel->eliminarVacaciones(
+
+    $_GET["eliminar"],
+    $_GET["fecha"]
+
+);
 
     header("Location: vacaciones.php");
 
@@ -548,7 +553,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
     <button
         class="btn-delete"
-        onclick="eliminarVacaciones(${v.id})">
+        onclick="eliminarVacaciones(${v.id}, '${info.dateStr}')">
 
         Eliminar
 
@@ -776,41 +781,34 @@ function filtrarCalendario(){
 
         let mostrar = true;
 
+        // Filtro empresa
         if(
-            empresa != "" &&
+            empresa !== "" &&
             evento.extendedProps.empresa != empresa
         ){
-
             mostrar = false;
-
         }
 
-       if(empleado != ""){
-
-    if(evento.extendedProps.tipo == "vacaciones"){
-
+        // Filtro empleado
         if(
-            !evento.extendedProps.usuarios ||
-            !evento.extendedProps.usuarios.includes(parseInt(empleado))
+            mostrar &&
+            empleado !== "" &&
+            evento.extendedProps.tipo === "vacaciones"
         ){
 
-            mostrar = false;
+            const usuarios =
+                (evento.extendedProps.usuarios || []).map(Number);
+
+            if(!usuarios.includes(Number(empleado))){
+                mostrar = false;
+            }
 
         }
 
-    }
-
-}
-
-        if(mostrar){
-
-            evento.setProp("display","auto");
-
-        }else{
-
-            evento.setProp("display","none");
-
-        }
+        evento.setProp(
+            "display",
+            mostrar ? "auto" : "none"
+        );
 
     });
 
@@ -872,14 +870,15 @@ document
     });
 
 });
-function eliminarVacaciones(id){
+function eliminarVacaciones(id, fecha){
 
-    if(!confirm("¿Eliminar estas vacaciones?")){
+    if(!confirm("¿Eliminar este día de vacaciones?")){
         return;
     }
 
     window.location =
-        "vacaciones.php?eliminar=" + id;
+        "vacaciones.php?eliminar=" + id +
+        "&fecha=" + fecha;
 
 }
 </script>

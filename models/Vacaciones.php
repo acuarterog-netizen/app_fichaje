@@ -84,7 +84,7 @@ class Vacaciones {
 
                 usuarios.empresa_id,
 
-                empresas.nombre AS empresa
+                usuarios.empresa_id AS empresa
 
             FROM vacaciones
 
@@ -403,7 +403,9 @@ $diasVacaciones[$fecha]["usuarios"][] = (int)$v["usuario_id"];
 
     "vacaciones" => $datos["vacaciones"],
 
-    "usuarios" => array_values(array_unique($datos["usuarios"]))
+    "usuarios" => array_values(array_unique($datos["usuarios"])),
+
+    "empresa" => $datos["vacaciones"][0]["empresa"] ?? ""
 
 ]
 
@@ -784,15 +786,128 @@ public function obtenerVacacionesPorFecha($fecha){
 
 }
 
-public function eliminarVacaciones($id){
+public function eliminarVacaciones($id, $fecha){
 
-    $sql = "DELETE FROM vacaciones
+    $sql = "SELECT *
+            FROM vacaciones
             WHERE id = :id";
 
     $stmt = $this->conexion->prepare($sql);
 
     $stmt->execute([
+        ":id" => $id
+    ]);
+
+    $vacacion = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if(!$vacacion){
+        return;
+    }
+
+    $inicio = $vacacion["fecha_inicio"];
+    $fin    = $vacacion["fecha_fin"];
+
+    // Solo era un día
+    if($inicio == $fin){
+
+        $sql = "DELETE FROM vacaciones
+                WHERE id = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        $stmt->execute([
+            ":id"=>$id
+        ]);
+
+        return;
+    }
+
+    // Elimina el primer día
+    if($fecha == $inicio){
+
+        $nuevoInicio = date(
+            "Y-m-d",
+            strtotime($inicio." +1 day")
+        );
+
+        $sql = "UPDATE vacaciones
+                SET fecha_inicio = :inicio
+                WHERE id = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        $stmt->execute([
+            ":inicio"=>$nuevoInicio,
+            ":id"=>$id
+        ]);
+
+        return;
+    }
+
+    // Elimina el último día
+    if($fecha == $fin){
+
+        $nuevoFin = date(
+            "Y-m-d",
+            strtotime($fin." -1 day")
+        );
+
+        $sql = "UPDATE vacaciones
+                SET fecha_fin = :fin
+                WHERE id = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        $stmt->execute([
+            ":fin"=>$nuevoFin,
+            ":id"=>$id
+        ]);
+
+        return;
+    }
+
+    // Día intermedio: dividir en dos periodos
+
+    $finPrimera = date(
+        "Y-m-d",
+        strtotime($fecha." -1 day")
+    );
+
+    $inicioSegunda = date(
+        "Y-m-d",
+        strtotime($fecha." +1 day")
+    );
+
+    // Actualizar el primer tramo
+
+    $sql = "UPDATE vacaciones
+            SET fecha_fin = :fin
+            WHERE id = :id";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":fin"=>$finPrimera,
         ":id"=>$id
+    ]);
+
+    // Crear el segundo tramo
+
+    $sql = "INSERT INTO vacaciones
+            (usuario_id, fecha_inicio, fecha_fin, estado, comentario)
+            VALUES
+            (:usuario, :inicio, :fin, :estado, :comentario)";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+
+        ":usuario"=>$vacacion["usuario_id"],
+        ":inicio"=>$inicioSegunda,
+        ":fin"=>$fin,
+        ":estado"=>$vacacion["estado"],
+        ":comentario"=>$vacacion["comentario"]
+
     ]);
 
 }
