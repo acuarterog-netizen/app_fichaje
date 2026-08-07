@@ -22,21 +22,27 @@ $pagina = basename($_SERVER['PHP_SELF']);
         <!-- FICHAR -->
 
         <a
-            href="fichar.php"
-            class="<?php if($pagina=="fichar.php") echo "active"; ?>"
-        >
-            ⏱️ Fichar
-        </a>
+    href="fichar.php"
+    class="<?php if($pagina=="fichar.php") echo "active"; ?>"
+>
+    ⏱️ Fichar
+</a>
+
+<?php if($_SESSION['usuario']['rol']=="encargado"): ?>
+
+<a
+    href="fichajes_encargado.php"
+    class="<?php if($pagina=="fichajes_encargado.php") echo "active"; ?>">
+
+    👥 Control empleados
+
+</a>
+
+<?php endif; ?>
 
         <!-- HISTORIAL -->
 
-        <?php
-        if(
-            $_SESSION['usuario']['rol']=="admin"
-            ||
-            $_SESSION['usuario']['rol']=="encargado"
-        ):
-        ?>
+        <?php if($_SESSION['usuario']['rol']=="admin"): ?>
 
         <a
             href="historial.php"
@@ -49,13 +55,7 @@ $pagina = basename($_SERVER['PHP_SELF']);
 
         <!-- VACACIONES -->
 
-        <?php
-        if(
-            $_SESSION['usuario']['rol']=="admin"
-            ||
-            $_SESSION['usuario']['rol']=="encargado"
-        ):
-        ?>
+        <?php if($_SESSION['usuario']['rol']=="admin"): ?>
 
         <a
             href="vacaciones.php"
@@ -68,13 +68,7 @@ $pagina = basename($_SERVER['PHP_SELF']);
 
 <!-- BAJAS -->
 
-<?php
-if(
-    $_SESSION['usuario']['rol']=="admin"
-    ||
-    $_SESSION['usuario']['rol']=="encargado"
-):
-?>
+<?php if($_SESSION['usuario']['rol']=="admin"): ?>
 
 <a
     href="bajas.php"

@@ -659,4 +659,26 @@ public function eliminarUsuario($id){
 
     }
 
+    public function obtenerEmpleadosEmpresa($empresa_id){
+
+    $sql = "SELECT *
+
+            FROM usuarios
+
+            WHERE empresa_id = :empresa_id
+
+            AND rol = 'empleado'
+
+            ORDER BY nombre ASC";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":empresa_id" => $empresa_id
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+}
+
 }
