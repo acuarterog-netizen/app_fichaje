@@ -28,6 +28,16 @@ $tiposBaja = $tipoBaja->obtenerTipos();
 
 $mensaje="";
 
+if(isset($_GET["eliminar"])){
+
+    $bajasModel->eliminarBaja($_GET["eliminar"]);
+
+    header("Location: bajas.php");
+
+    exit;
+
+}
+
 if(isset($_POST["guardar"])){
 
     $bajasModel->crearBaja(
@@ -585,7 +595,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
             dateClick:function(info){
 
-    fetch("/app_fichaje/public/vacacionesDia.php?fecha="+encodeURIComponent(info.dateStr))
+    fetch("/app_fichaje/public/bajasDia.php?fecha="+encodeURIComponent(info.dateStr))
 
     .then(response => response.json())
 
@@ -595,7 +605,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
         if(datos.length === 0){
 
-            html = "<p>No hay empleados de vacaciones este día.</p>";
+            html = "<p>No hay bajas este día.</p>";
 
         }else{
 
@@ -610,7 +620,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
     <button
         class="btn-delete"
-        onclick="eliminarVacaciones(${v.id})">
+        onclick="eliminarBaja(${v.id})">
 
         Eliminar
 
@@ -629,11 +639,11 @@ document.addEventListener("DOMContentLoaded",function(){
         const overlay = document.getElementById("overlay");
 
         if(!titulo || !contenido || !drawer){
-            console.error("No existe el drawer de vacaciones del día.");
+            console.error("No existe el drawer de bajas.");
             return;
         }
 
-        titulo.innerHTML = "Vacaciones - " + info.dateStr;
+        titulo.innerHTML = "Bajas - " + info.dateStr;
         contenido.innerHTML = html;
 
         drawer.classList.add("show");
@@ -692,7 +702,15 @@ document.addEventListener("DOMContentLoaded",function(){
 
     textColor:"#ffffff",
 
-    allDay:true
+    allDay:true,
+
+    extendedProps:{
+
+        empresa:"<?= $evento["extendedProps"]["empresa"] ?>",
+
+        usuario:"<?= $evento["extendedProps"]["usuario"] ?>"
+
+    }
 
 },
 
@@ -823,27 +841,18 @@ function filtrarCalendario(){
 
         let mostrar = true;
 
-        if(
-            empresa != "" &&
-            evento.extendedProps.empresa != empresa
-        ){
+        if (
+    empresa != "" &&
+    evento.extendedProps.empresa != empresa
+){
+    mostrar = false;
+}
 
-            mostrar = false;
+       if (empleado != "") {
 
-        }
+    if (evento.extendedProps.usuario != empleado) {
 
-       if(empleado != ""){
-
-    if(evento.extendedProps.tipo == "vacaciones"){
-
-        if(
-            !evento.extendedProps.usuarios ||
-            !evento.extendedProps.usuarios.includes(parseInt(empleado))
-        ){
-
-            mostrar = false;
-
-        }
+        mostrar = false;
 
     }
 
@@ -865,19 +874,14 @@ function filtrarCalendario(){
 
 
 
-function editarVacacion(id){
+function eliminarBaja(id){
 
-    alert("Editar vacaciones " + id);
-
-}
-
-function eliminarVacacion(id){
-
-    if(confirm("¿Eliminar estas vacaciones?")){
-
-        alert("Eliminar vacaciones " + id);
-
+    if(!confirm("¿Eliminar esta baja?")){
+        return;
     }
+
+    window.location =
+        "bajas.php?eliminar=" + id;
 
 }
 /*

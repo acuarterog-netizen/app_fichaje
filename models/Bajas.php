@@ -59,23 +59,27 @@ public function obtenerEventosCalendario(){
 
     $sql = "SELECT
 
-                bajas.id,
+            bajas.id,
 
-                usuarios.nombre,
+            usuarios.id AS usuario_id,
 
-                bajas.fecha_inicio,
+            usuarios.empresa_id,
 
-                bajas.fecha_fin,
+            usuarios.nombre,
 
-                tipos_baja.color
+            bajas.fecha_inicio,
 
-            FROM bajas
+            bajas.fecha_fin,
 
-            INNER JOIN usuarios
-                ON bajas.usuario_id = usuarios.id
+            tipos_baja.color
 
-            LEFT JOIN tipos_baja
-                ON bajas.tipo = tipos_baja.nombre";
+        FROM bajas
+
+        INNER JOIN usuarios
+            ON bajas.usuario_id = usuarios.id
+
+        LEFT JOIN tipos_baja
+            ON bajas.tipo = tipos_baja.nombre";
 
     $stmt = $this->conexion->prepare($sql);
 
@@ -87,24 +91,89 @@ public function obtenerEventosCalendario(){
 
         $eventos[] = [
 
-            "id"=>$fila["id"],
+    "id"=>$fila["id"],
 
-            "title"=>$fila["nombre"],
+    "title"=>$fila["nombre"],
 
-            "start"=>$fila["fecha_inicio"],
+    "start"=>$fila["fecha_inicio"],
 
-            "end"=>date(
-                "Y-m-d",
-                strtotime($fila["fecha_fin"]." +1 day")
-            ),
+    "end"=>date(
+        "Y-m-d",
+        strtotime($fila["fecha_fin"]." +1 day")
+    ),
 
-            "color"=>$fila["color"] ?: "#dc3545"
+    "color"=>$fila["color"] ?: "#dc3545",
 
-        ];
+    "extendedProps"=>[
+
+        "empresa"=>$fila["empresa_id"],
+
+        "usuario"=>$fila["usuario_id"]
+
+    ]
+
+];
 
     }
 
     return $eventos;
+
+}
+
+public function obtenerBajasPorFecha($fecha){
+
+    $sql = "SELECT
+
+                MIN(bajas.id) AS id,
+                usuarios.id AS usuario_id,
+                usuarios.nombre,
+                empresas.nombre AS empresa,
+                tipos_baja.nombre AS tipo,
+                tipos_baja.color
+
+            FROM bajas
+
+            INNER JOIN usuarios
+                ON bajas.usuario_id = usuarios.id
+
+            LEFT JOIN empresas
+                ON usuarios.empresa_id = empresas.id
+
+            LEFT JOIN tipos_baja
+                ON bajas.tipo = tipos_baja.nombre
+
+            WHERE :fecha BETWEEN bajas.fecha_inicio
+                             AND bajas.fecha_fin
+
+            GROUP BY
+                usuarios.id,
+                usuarios.nombre,
+                empresas.nombre,
+                tipos_baja.nombre,
+                tipos_baja.color
+
+            ORDER BY usuarios.nombre";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":fecha"=>$fecha
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+}
+
+public function eliminarBaja($id){
+
+    $sql = "DELETE FROM bajas
+            WHERE id = :id";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":id"=>$id
+    ]);
 
 }
 }

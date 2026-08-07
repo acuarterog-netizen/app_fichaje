@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
             dateClick:function(info){
 
-    fetch("/app_fichaje/public/vacacionesDia.php?fecha="+encodeURIComponent(info.dateStr))
+    fetch("/app_fichaje/public/bajasDia.php?fecha="+encodeURIComponent(info.dateStr))
 
     .then(response => response.json())
 
@@ -538,28 +538,30 @@ document.addEventListener("DOMContentLoaded",function(){
 
         if(datos.length === 0){
 
-            html = "<p>No hay empleados de vacaciones este día.</p>";
+            html = "<p>No hay bajas este día.</p>";
 
         }else{
 
             datos.forEach(function(v){
 
                 html += `
-<div class="lista-evento">
 
-    <strong>${v.nombre}</strong><br>
+<strong>${v.nombre}</strong><br>
 
-    <small>${v.empresa}</small>
+<small>${v.empresa}</small><br>
 
-    <button
-        class="btn-delete"
-        onclick="eliminarVacaciones(${v.id}, '${info.dateStr}')">
+<small>Tipo: ${v.tipo}</small>
 
-        Eliminar
+<button
+    class="btn-delete"
+    onclick="eliminarBaja(${v.id})">
 
-    </button>
+    Eliminar
 
-</div>
+</button>
+
+<hr>
+
 `;
 
             });
@@ -572,48 +574,35 @@ document.addEventListener("DOMContentLoaded",function(){
         const overlay = document.getElementById("overlay");
 
         if(!titulo || !contenido || !drawer){
-            console.error("No existe el drawer de vacaciones del día.");
+
+            console.error("No existe el drawer de bajas.");
             return;
+
         }
 
-        titulo.innerHTML = "Vacaciones - " + info.dateStr;
+        titulo.innerHTML = "Bajas - " + info.dateStr;
+
         contenido.innerHTML = html;
 
         drawer.classList.add("show");
 
         if(overlay){
+
             overlay.classList.add("show");
+
         }
 
     })
 
     .catch(function(error){
 
-    console.error(error);
+        console.error(error);
 
-    alert(error);
+        alert(error);
 
-});
+    });
 
 },
-
-            select:function(info){
-
-                if(document.getElementById("tipo").value=="vacaciones"){
-
-                    document.getElementById("fecha_inicio").value =
-                        info.startStr;
-
-                    let fin = new Date(info.end);
-
-                    fin.setDate(fin.getDate()-1);
-
-                    document.getElementById("fecha_fin").value =
-                        fin.toISOString().split("T")[0];
-
-                }
-
-            },
 
             events:[
 
@@ -870,15 +859,15 @@ document
     });
 
 });
-function eliminarVacaciones(id, fecha){
 
-    if(!confirm("¿Eliminar este día de vacaciones?")){
+function eliminarBaja(id){
+
+    if(!confirm("¿Eliminar esta baja?")){
         return;
     }
 
     window.location =
-        "vacaciones.php?eliminar=" + id +
-        "&fecha=" + fecha;
+        "bajas.php?eliminar=" + id;
 
 }
 </script>
