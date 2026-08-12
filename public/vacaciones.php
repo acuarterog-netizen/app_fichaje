@@ -528,7 +528,10 @@ document.addEventListener("DOMContentLoaded",function(){
 
             dateClick:function(info){
 
-    fetch("/app_fichaje/public/bajasDia.php?fecha="+encodeURIComponent(info.dateStr))
+    fetch(
+        "/app_fichaje/public/vacacionesDia.php?fecha=" +
+        encodeURIComponent(info.dateStr)
+    )
 
     .then(response => response.json())
 
@@ -538,7 +541,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
         if(datos.length === 0){
 
-            html = "<p>No hay bajas este día.</p>";
+            html = "<p>No hay empleados de vacaciones este día.</p>";
 
         }else{
 
@@ -546,41 +549,52 @@ document.addEventListener("DOMContentLoaded",function(){
 
                 html += `
 
-<strong>${v.nombre}</strong><br>
+                    <div class="lista-evento">
 
-<small>${v.empresa}</small><br>
+                        <strong>${v.nombre}</strong><br>
 
-<small>Tipo: ${v.tipo}</small>
+                        <small>${v.empresa}</small>
 
-<button
-    class="btn-delete"
-    onclick="eliminarBaja(${v.id})">
+                        <button
+                            class="btn-delete"
+                            onclick="eliminarVacaciones(${v.id}, '${info.dateStr}')">
 
-    Eliminar
+                            Eliminar
 
-</button>
+                        </button>
 
-<hr>
+                    </div>
 
-`;
+                `;
 
             });
 
         }
 
-        const titulo = document.getElementById("tituloDrawerDia");
-        const contenido = document.getElementById("contenidoDrawerDia");
-        const drawer = document.getElementById("drawerDia");
-        const overlay = document.getElementById("overlay");
+        const titulo =
+            document.getElementById("tituloDrawerDia");
+
+        const contenido =
+            document.getElementById("contenidoDrawerDia");
+
+        const drawer =
+            document.getElementById("drawerDia");
+
+        const overlay =
+            document.getElementById("overlay");
 
         if(!titulo || !contenido || !drawer){
 
-            console.error("No existe el drawer de bajas.");
+            console.error(
+                "No existe el drawer de vacaciones."
+            );
+
             return;
 
         }
 
-        titulo.innerHTML = "Bajas - " + info.dateStr;
+        titulo.innerHTML =
+            "Vacaciones - " + info.dateStr;
 
         contenido.innerHTML = html;
 
@@ -598,12 +612,11 @@ document.addEventListener("DOMContentLoaded",function(){
 
         console.error(error);
 
-        alert(error);
+        alert("Error al cargar las vacaciones.");
 
     });
 
 },
-
             events:[
 
                 <?php foreach($eventos as $evento): ?>
@@ -811,13 +824,15 @@ function editarVacacion(id){
 
 }
 
-function eliminarVacacion(id){
+function eliminarVacaciones(id, fecha){
 
-    if(confirm("¿Eliminar estas vacaciones?")){
-
-        alert("Eliminar vacaciones " + id);
-
+    if(!confirm("¿Eliminar este día de vacaciones?")){
+        return;
     }
+
+    window.location =
+        "vacaciones.php?eliminar=" + id +
+        "&fecha=" + fecha;
 
 }
 /*
@@ -860,16 +875,6 @@ document
 
 });
 
-function eliminarBaja(id){
-
-    if(!confirm("¿Eliminar esta baja?")){
-        return;
-    }
-
-    window.location =
-        "bajas.php?eliminar=" + id;
-
-}
 </script>
 
 <?php
