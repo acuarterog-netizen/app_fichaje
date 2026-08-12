@@ -5,54 +5,122 @@ require_once "../models/Fichaje.php";
 require_once "../models/Usuario.php";
 require_once "../models/Empresa.php";
 
+
 Auth::verificarSesion();
-Auth::esAdmin();
+
+
+/*
+==========================================================
+COMPROBAR ROL
+==========================================================
+*/
+
+$rol = $_SESSION["usuario"]["rol"];
+
+
+if(
+    $rol != "admin" &&
+    $rol != "encargado"
+){
+
+    header("Location: dashboard.php");
+    exit;
+
+}
+
 
 $fichajeModel = new Fichaje();
 $usuarioModel = new Usuario();
 $empresaModel = new Empresa();
 
+
 $mensaje = "";
 
-/* ==========================================================
-   FILTROS
-========================================================== */
+
+/*
+==========================================================
+FILTROS
+==========================================================
+*/
 
 $busqueda = $_GET['busqueda'] ?? "";
-$empresaFiltro = $_GET['empresa'] ?? "";
 
-/* ==========================================================
-   EMPRESAS
-========================================================== */
+
+/*
+==========================================================
+EMPRESA
+==========================================================
+*/
+
+/*
+    ADMIN Y ENCARGADO PUEDEN ELEGIR
+    CUALQUIER EMPRESA
+*/
+
+$empresaFiltro = $_GET['empresa'] ?? "";
 
 $empresas = $empresaModel->obtenerEmpresas();
 
-/* ==========================================================
-   EMPLEADOS
-========================================================== */
+
+/*
+==========================================================
+EMPLEADOS
+==========================================================
+*/
 
 $usuarios = $usuarioModel->filtrarUsuarios(
     $busqueda,
     $empresaFiltro
 );
 
-/* ==========================================================
-   FICHAR SELECCIONADOS
-========================================================== */
+
+/*
+==========================================================
+FICHAR SELECCIONADOS
+==========================================================
+*/
 
 if(isset($_POST['fichar_seleccionados'])){
 
-    if(isset($_POST['usuarios']) && count($_POST['usuarios'])>0){
 
-        $resultado = $fichajeModel->crearFichajesMasivos($_POST['usuarios']);
+    if(
+        isset($_POST['usuarios']) &&
+        count($_POST['usuarios']) > 0
+    ){
 
-        $mensaje = $resultado . " empleado(s) fichado(s) correctamente.";
+        $usuariosSeleccionados = $_POST['usuarios'];
+
+
+        /*
+        ==================================================
+        CREAR FICHAJES
+        ==================================================
+        */
+
+        $resultado =
+            $fichajeModel->crearFichajesMasivos(
+                $usuariosSeleccionados
+            );
+
+
+        $mensaje =
+            $resultado .
+            " empleado(s) fichado(s) correctamente.";
+
 
     }else{
 
-        $mensaje = "No has seleccionado ningún empleado.";
+        $mensaje =
+            "No has seleccionado ningún empleado.";
 
     }
+
+
+    /*
+    ==================================================
+    RECARGAR EMPLEADOS DESPUÉS DEL FICHAJE
+    ==================================================
+    */
 
     $usuarios = $usuarioModel->filtrarUsuarios(
         $busqueda,
@@ -61,185 +129,303 @@ if(isset($_POST['fichar_seleccionados'])){
 
 }
 
+
 include "../views/layouts/header.php";
 include "../views/layouts/sidebar.php";
 
 ?>
 
+
 <h1>Fichaje de empleados</h1>
 
-<?php if($mensaje!=""): ?>
 
-<div class="alert alert-success">
-    <?php echo $mensaje; ?>
-</div>
+<?php if($mensaje != ""): ?>
+
+    <div class="alert alert-success">
+
+        <?php echo $mensaje; ?>
+
+    </div>
 
 <?php endif; ?>
 
+
 <div class="fichaje-card">
 
-<form method="GET"
-style="display:flex;gap:20px;flex-wrap:wrap;align-items:end;">
 
-    <div class="form-group">
+    <form
+        method="GET"
+        style="
+            display:flex;
+            gap:20px;
+            flex-wrap:wrap;
+            align-items:end;
+        "
+    >
 
-        <label>Buscar empleado</label>
 
-        <input
-            type="text"
-            name="busqueda"
-            class="form-control"
-            placeholder="Nombre o email"
-            value="<?php echo $busqueda; ?>">
+        <!-- BUSCAR EMPLEADO -->
 
-    </div>
+        <div class="form-group">
 
-    <div class="form-group">
+            <label>Buscar empleado</label>
 
-        <label>Empresa</label>
+            <input
+                type="text"
+                name="busqueda"
+                class="form-control"
+                placeholder="Nombre o email"
+                value="<?php echo htmlspecialchars($busqueda); ?>"
+            >
 
-        <select
-            name="empresa"
-            class="form-control select-buscador">
+        </div>
 
-            <option value="">Todas</option>
 
-            <?php foreach($empresas as $empresa): ?>
+        <!-- EMPRESA -->
 
-                <option
-                    value="<?php echo $empresa['id']; ?>"
-                    <?php if($empresaFiltro==$empresa['id']) echo "selected"; ?>>
+        <div class="form-group">
 
-                    <?php echo $empresa['nombre']; ?>
+            <label>Empresa</label>
 
-                </option>
+            <select
+                name="empresa"
+                class="form-control select-buscador"
+            >
 
-            <?php endforeach; ?>
+                <option value="">Todas</option>
 
-        </select>
 
-    </div>
+                <?php foreach($empresas as $empresa): ?>
 
-    <button class="btn-main-blue" type="submit">
-        Filtrar
-    </button>
+                    <option
+                        value="<?php echo $empresa['id']; ?>"
+                        <?php
 
-    <a href="fichar.php" class="btn-delete">
-        Limpiar
-    </a>
+                        if(
+                            $empresaFiltro ==
+                            $empresa['id']
+                        ){
 
-</form>
+                            echo "selected";
+
+                        }
+
+                        ?>
+                    >
+
+                        <?php echo $empresa['nombre']; ?>
+
+                    </option>
+
+                <?php endforeach; ?>
+
+            </select>
+
+        </div>
+
+
+        <button
+            class="btn-main-blue"
+            type="submit"
+        >
+
+            Filtrar
+
+        </button>
+
+
+        <a
+            href="fichar.php"
+            class="btn-delete"
+        >
+
+            Limpiar
+
+        </a>
+
+
+    </form>
+
 
 </div>
 
+
 <br>
+
 
 <form method="POST">
 
-<div class="fichaje-card">
 
-<table class="tabla-gestion">
+    <div class="fichaje-card">
 
-<tr>
 
-<th>
-<input type="checkbox" id="seleccionarTodos">
-</th>
+        <table class="tabla-gestion">
 
-<th>ID</th>
-<th>Empleado</th>
-<th>Empresa</th>
-<th>Email</th>
-<th>Estado</th>
 
-</tr>
+            <tr>
 
-<?php foreach($usuarios as $usuario): ?>
+                <th>
 
-<?php
+                    <input
+                        type="checkbox"
+                        id="seleccionarTodos"
+                    >
 
-$fichado = $fichajeModel->yaFichoHoy($usuario['id']);
+                </th>
 
-?>
+                <th>ID</th>
 
-<tr>
+                <th>Empleado</th>
 
-<td>
+                <th>Empresa</th>
 
-<?php if(!$fichado): ?>
+                <th>Email</th>
 
-<input
-    type="checkbox"
-    class="checkEmpleado"
-    name="usuarios[]"
-    value="<?php echo $usuario['id']; ?>">
+                <th>Estado</th>
 
-<?php endif; ?>
+            </tr>
 
-</td>
 
-<td><?php echo $usuario['id']; ?></td>
+            <?php foreach($usuarios as $usuario): ?>
 
-<td><?php echo $usuario['nombre']; ?></td>
 
-<td><?php echo $usuario['empresa_nombre']; ?></td>
+                <?php
 
-<td><?php echo $usuario['email']; ?></td>
+                $fichado =
+                    $fichajeModel->yaFichoHoy(
+                        $usuario['id']
+                    );
 
-<td>
+                ?>
 
-<?php
 
-if($fichado){
+                <tr>
 
-    echo "<span class='badge-rol'>Fichado</span>";
 
-}else{
+                    <td>
 
-    echo "<span class='badge-rol' style='background:#dc3545;'>Pendiente</span>";
+                        <?php if(!$fichado): ?>
 
-}
+                            <input
+                                type="checkbox"
+                                class="checkEmpleado"
+                                name="usuarios[]"
+                                value="<?php echo $usuario['id']; ?>"
+                            >
 
-?>
+                        <?php endif; ?>
 
-</td>
+                    </td>
 
-</tr>
 
-<?php endforeach; ?>
+                    <td>
 
-</table>
+                        <?php echo $usuario['id']; ?>
 
-<br>
+                    </td>
 
-<button
-    class="btn-main-blue"
-    type="submit"
-    name="fichar_seleccionados">
 
-    Fichar seleccionados
+                    <td>
 
-</button>
+                        <?php echo $usuario['nombre']; ?>
 
-</div>
+                    </td>
+
+
+                    <td>
+
+                        <?php echo $usuario['empresa_nombre']; ?>
+
+                    </td>
+
+
+                    <td>
+
+                        <?php echo $usuario['email']; ?>
+
+                    </td>
+
+
+                    <td>
+
+                        <?php
+
+                        if($fichado){
+
+                            echo
+                                "<span class='badge-rol'>Fichado</span>";
+
+                        }else{
+
+                            echo
+                                "<span
+                                    class='badge-rol'
+                                    style='background:#dc3545;'
+                                >
+                                    Pendiente
+                                </span>";
+
+                        }
+
+                        ?>
+
+                    </td>
+
+
+                </tr>
+
+
+            <?php endforeach; ?>
+
+
+        </table>
+
+
+        <br>
+
+
+        <button
+            class="btn-main-blue"
+            type="submit"
+            name="fichar_seleccionados"
+        >
+
+            Fichar seleccionados
+
+        </button>
+
+
+    </div>
+
 
 </form>
 
+
 <br>
+
 
 <script>
 
-document.getElementById("seleccionarTodos").addEventListener("change",function(){
+document
+.getElementById("seleccionarTodos")
+.addEventListener(
+    "change",
+    function(event){
 
-    document.querySelectorAll(".checkEmpleado").forEach(function(check){
+        document
+        .querySelectorAll(".checkEmpleado")
+        .forEach(function(check){
 
-        check.checked = event.target.checked;
+            check.checked =
+                event.target.checked;
 
-    });
+        });
 
-});
+    }
+);
 
 </script>
+
 
 <?php
 
