@@ -7,6 +7,7 @@ class Empresa {
     private $conexion;
     private $table = "empresas";
 
+
     public function __construct() {
 
         $database = new Database();
@@ -14,6 +15,7 @@ class Empresa {
         $this->conexion = $database->conectar();
 
     }
+
 
     /* ==========================================================================
        OBTENER TODAS
@@ -33,6 +35,7 @@ class Empresa {
 
     }
 
+
     /* ==========================================================================
        OBTENER POR ID
     ========================================================================== */
@@ -46,14 +49,13 @@ class Empresa {
         $stmt = $this->conexion->prepare($sql);
 
         $stmt->execute([
-
             ':id' => $id
-
         ]);
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
 
     }
+
 
     /* ==========================================================================
        CREAR EMPRESA
@@ -63,25 +65,34 @@ class Empresa {
         $nombre,
         $cif,
         $titular,
-        $direccion
+        $direccion,
+        $hora_entrada,
+        $hora_salida,
+        $descanso,
+        $horas_jornada
     ) {
 
         $sql = "INSERT INTO " . $this->table . "
-
                 (
                     nombre,
                     cif,
                     titular,
-                    direccion
+                    direccion,
+                    hora_entrada,
+                    hora_salida,
+                    descanso,
+                    horas_jornada
                 )
-
                 VALUES
-
                 (
                     :nombre,
                     :cif,
                     :titular,
-                    :direccion
+                    :direccion,
+                    :hora_entrada,
+                    :hora_salida,
+                    :descanso,
+                    :horas_jornada
                 )";
 
         $stmt = $this->conexion->prepare($sql);
@@ -89,13 +100,25 @@ class Empresa {
         return $stmt->execute([
 
             ':nombre' => $nombre,
+
             ':cif' => $cif,
+
             ':titular' => $titular,
-            ':direccion' => $direccion
+
+            ':direccion' => $direccion,
+
+            ':hora_entrada' => $hora_entrada,
+
+            ':hora_salida' => $hora_salida,
+
+            ':descanso' => $descanso,
+
+            ':horas_jornada' => $horas_jornada
 
         ]);
 
     }
+
 
     /* ==========================================================================
        EDITAR EMPRESA
@@ -106,17 +129,23 @@ class Empresa {
         $nombre,
         $cif,
         $titular,
-        $direccion
+        $direccion,
+        $hora_entrada,
+        $hora_salida,
+        $descanso,
+        $horas_jornada
     ) {
 
         $sql = "UPDATE " . $this->table . "
-
                 SET
-
                     nombre = :nombre,
                     cif = :cif,
                     titular = :titular,
-                    direccion = :direccion
+                    direccion = :direccion,
+                    hora_entrada = :hora_entrada,
+                    hora_salida = :hora_salida,
+                    descanso = :descanso,
+                    horas_jornada = :horas_jornada
 
                 WHERE id = :id";
 
@@ -125,51 +154,63 @@ class Empresa {
         return $stmt->execute([
 
             ':id' => $id,
+
             ':nombre' => $nombre,
+
             ':cif' => $cif,
+
             ':titular' => $titular,
-            ':direccion' => $direccion
+
+            ':direccion' => $direccion,
+
+            ':hora_entrada' => $hora_entrada,
+
+            ':hora_salida' => $hora_salida,
+
+            ':descanso' => $descanso,
+
+            ':horas_jornada' => $horas_jornada
 
         ]);
 
     }
 
+
     /* ==========================================================================
-   FILTRAR EMPRESAS
-========================================================================== */
+       FILTRAR EMPRESAS
+    ========================================================================== */
 
-public function filtrarEmpresas($busqueda = "") {
+    public function filtrarEmpresas($busqueda = "") {
 
-    $sql = "SELECT *
-            FROM empresas
-            WHERE 1=1";
+        $sql = "SELECT *
+                FROM " . $this->table . "
+                WHERE 1=1";
 
-    $params = [];
+        $params = [];
 
-    if($busqueda != "") {
+        if($busqueda != "") {
 
-        $sql .= " AND (
+            $sql .= " AND (
+                        nombre LIKE :busqueda
+                        OR cif LIKE :busqueda
+                        OR titular LIKE :busqueda
+                        OR direccion LIKE :busqueda
+                    )";
 
-                    nombre LIKE :busqueda
-                    OR cif LIKE :busqueda
-                    OR titular LIKE :busqueda
-                    OR direccion LIKE :busqueda
+            $params[':busqueda'] = "%" . $busqueda . "%";
 
-                )";
+        }
 
-        $params[':busqueda'] = "%" . $busqueda . "%";
+        $sql .= " ORDER BY nombre ASC";
+
+        $stmt = $this->conexion->prepare($sql);
+
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     }
 
-    $sql .= " ORDER BY nombre ASC";
-
-    $stmt = $this->conexion->prepare($sql);
-
-    $stmt->execute($params);
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-}
 
     /* ==========================================================================
        ELIMINAR EMPRESA
@@ -184,9 +225,7 @@ public function filtrarEmpresas($busqueda = "") {
         $stmt = $this->conexion->prepare($sql);
 
         return $stmt->execute([
-
             ':id' => $id
-
         ]);
 
     }

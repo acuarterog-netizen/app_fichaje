@@ -786,6 +786,33 @@ public function obtenerVacacionesPorFecha($fecha){
 
 }
 
+public function obtenerFestivosPorFecha($fecha){
+
+    $sql = "SELECT
+                festivos.id,
+                festivos.empresa_id,
+                festivos.fecha,
+                festivos.nombre,
+                empresas.nombre AS empresa
+
+            FROM festivos
+
+            LEFT JOIN empresas
+                ON festivos.empresa_id = empresas.id
+
+            WHERE festivos.fecha = :fecha
+
+            ORDER BY empresas.nombre";
+
+    $stmt = $this->conexion->prepare($sql);
+
+    $stmt->execute([
+        ":fecha" => $fecha
+    ]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 public function eliminarVacaciones($id, $fecha){
 
     $sql = "SELECT *

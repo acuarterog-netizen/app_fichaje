@@ -1,3 +1,4 @@
+
 <?php
 
 require_once "../core/Auth.php";
@@ -12,7 +13,7 @@ $empresaModel = new Empresa();
    COMPROBAR ID
 ========================================================================== */
 
-if(!isset($_GET['id'])) {
+if(!isset($_GET['id'])){
 
     header("Location: empresas.php");
     exit;
@@ -27,7 +28,7 @@ $id = $_GET['id'];
 
 $empresa = $empresaModel->obtenerEmpresaPorId($id);
 
-if(!$empresa) {
+if(!$empresa){
 
     header("Location: empresas.php");
     exit;
@@ -38,15 +39,35 @@ if(!$empresa) {
    GUARDAR CAMBIOS
 ========================================================================== */
 
-if($_SERVER['REQUEST_METHOD'] == 'POST') {
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+
+    $horas_jornada = (float) $_POST['horas_jornada'];
+
+    if($horas_jornada > 8){
+
+        die("La jornada laboral no puede superar las 8 horas.");
+
+    }
 
     $empresaModel->editarEmpresa(
 
         $id,
+
         trim($_POST['nombre']),
+
         trim($_POST['cif']),
+
         trim($_POST['titular']),
-        trim($_POST['direccion'])
+
+        trim($_POST['direccion']),
+
+        $_POST['hora_entrada'],
+
+        $_POST['hora_salida'],
+
+        (int) $_POST['descanso'],
+
+        $horas_jornada
 
     );
 
@@ -66,6 +87,8 @@ include "../views/layouts/sidebar.php";
 
     <form method="POST">
 
+        <!-- NOMBRE -->
+
         <div class="form-group">
 
             <label>Nombre</label>
@@ -79,6 +102,8 @@ include "../views/layouts/sidebar.php";
             >
 
         </div>
+
+        <!-- CIF -->
 
         <div class="form-group">
 
@@ -94,6 +119,8 @@ include "../views/layouts/sidebar.php";
 
         </div>
 
+        <!-- TITULAR -->
+
         <div class="form-group">
 
             <label>Titular / Razón social</label>
@@ -107,6 +134,8 @@ include "../views/layouts/sidebar.php";
             >
 
         </div>
+
+        <!-- DIRECCIÓN -->
 
         <div class="form-group">
 
@@ -122,11 +151,83 @@ include "../views/layouts/sidebar.php";
 
         </div>
 
+        <!-- HORA ENTRADA -->
+
+        <div class="form-group">
+
+            <label>Hora de entrada</label>
+
+            <input
+                type="time"
+                name="hora_entrada"
+                class="form-control"
+                value="<?php echo substr($empresa['hora_entrada'],0,5); ?>"
+                required
+            >
+
+        </div>
+
+        <!-- HORA SALIDA -->
+
+        <div class="form-group">
+
+            <label>Hora de salida</label>
+
+            <input
+                type="time"
+                name="hora_salida"
+                class="form-control"
+                value="<?php echo substr($empresa['hora_salida'],0,5); ?>"
+                required
+            >
+
+        </div>
+
+        <!-- DESCANSO -->
+
+        <div class="form-group">
+
+            <label>Descanso (minutos)</label>
+
+            <input
+                type="number"
+                name="descanso"
+                class="form-control"
+                value="<?php echo $empresa['descanso']; ?>"
+                min="0"
+                required
+            >
+
+        </div>
+
+        <!-- HORAS JORNADA -->
+
+        <div class="form-group">
+
+            <label>Horas de jornada</label>
+
+            <input
+                type="number"
+                name="horas_jornada"
+                class="form-control"
+                value="<?php echo $empresa['horas_jornada']; ?>"
+                min="0"
+                max="8"
+                step="0.5"
+                required
+            >
+
+            <small>La jornada máxima permitida es de 8 horas.</small>
+
+        </div>
+
         <button
             class="btn-main-blue"
             type="submit"
         >
+
             Guardar cambios
+
         </button>
 
     </form>
