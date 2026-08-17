@@ -24,13 +24,16 @@ if(
 ){
 
     header("Location: dashboard.php");
+
     exit;
 
 }
 
 
 $fichajeModel = new Fichaje();
+
 $usuarioModel = new Usuario();
+
 $empresaModel = new Empresa();
 
 
@@ -50,11 +53,6 @@ $busqueda = $_GET['busqueda'] ?? "";
 ==========================================================
 EMPRESA
 ==========================================================
-*/
-
-/*
-    ADMIN Y ENCARGADO PUEDEN ELEGIR
-    CUALQUIER EMPRESA
 */
 
 $empresaFiltro = $_GET['empresa'] ?? "";
@@ -88,7 +86,8 @@ if(isset($_POST['fichar_seleccionados'])){
         count($_POST['usuarios']) > 0
     ){
 
-        $usuariosSeleccionados = $_POST['usuarios'];
+        $usuariosSeleccionados =
+            $_POST['usuarios'];
 
 
         /*
@@ -122,15 +121,17 @@ if(isset($_POST['fichar_seleccionados'])){
     ==================================================
     */
 
-    $usuarios = $usuarioModel->filtrarUsuarios(
-        $busqueda,
-        $empresaFiltro
-    );
+    $usuarios =
+        $usuarioModel->filtrarUsuarios(
+            $busqueda,
+            $empresaFiltro
+        );
 
 }
 
 
 include "../views/layouts/header.php";
+
 include "../views/layouts/sidebar.php";
 
 ?>
@@ -143,7 +144,7 @@ include "../views/layouts/sidebar.php";
 
     <div class="alert alert-success">
 
-        <?php echo $mensaje; ?>
+        <?php echo htmlspecialchars($mensaje); ?>
 
     </div>
 
@@ -192,7 +193,9 @@ include "../views/layouts/sidebar.php";
                 class="form-control select-buscador"
             >
 
-                <option value="">Todas</option>
+                <option value="">
+                    Todas
+                </option>
 
 
                 <?php foreach($empresas as $empresa): ?>
@@ -213,7 +216,13 @@ include "../views/layouts/sidebar.php";
                         ?>
                     >
 
-                        <?php echo $empresa['nombre']; ?>
+                        <?php
+
+                        echo htmlspecialchars(
+                            $empresa['nombre']
+                        );
+
+                        ?>
 
                     </option>
 
@@ -291,9 +300,28 @@ include "../views/layouts/sidebar.php";
 
                 <?php
 
+                /*
+                ==========================================================
+                COMPROBAR SI YA FICHÓ
+                ==========================================================
+                */
+
                 $fichado =
                     $fichajeModel->yaFichoHoy(
                         $usuario['id']
+                    );
+
+
+                /*
+                ==========================================================
+                COMPROBAR VACACIONES / BAJA
+                ==========================================================
+                */
+
+                $estadoNoFichar =
+                    $fichajeModel->estadoNoFichar(
+                        $usuario['id'],
+                        date("Y-m-d")
                     );
 
                 ?>
@@ -304,7 +332,24 @@ include "../views/layouts/sidebar.php";
 
                     <td>
 
-                        <?php if(!$fichado): ?>
+                        <?php
+
+                        /*
+                        ==================================================
+                        SOLO SE PUEDE SELECCIONAR SI:
+
+                        - NO HA FICHADO
+                        - NO ESTÁ DE VACACIONES
+                        - NO ESTÁ DE BAJA
+                        ==================================================
+                        */
+
+                        if(
+                            !$fichado &&
+                            !$estadoNoFichar
+                        ):
+
+                        ?>
 
                             <input
                                 type="checkbox"
@@ -320,28 +365,13 @@ include "../views/layouts/sidebar.php";
 
                     <td>
 
-                        <?php echo $usuario['id']; ?>
+                        <?php
 
-                    </td>
+                        echo htmlspecialchars(
+                            $usuario['id']
+                        );
 
-
-                    <td>
-
-                        <?php echo $usuario['nombre']; ?>
-
-                    </td>
-
-
-                    <td>
-
-                        <?php echo $usuario['empresa_nombre']; ?>
-
-                    </td>
-
-
-                    <td>
-
-                        <?php echo $usuario['email']; ?>
+                        ?>
 
                     </td>
 
@@ -350,17 +380,124 @@ include "../views/layouts/sidebar.php";
 
                         <?php
 
+                        echo htmlspecialchars(
+                            $usuario['nombre']
+                        );
+
+                        ?>
+
+                    </td>
+
+
+                    <td>
+
+                        <?php
+
+                        echo htmlspecialchars(
+                            $usuario['empresa_nombre']
+                        );
+
+                        ?>
+
+                    </td>
+
+
+                    <td>
+
+                        <?php
+
+                        echo htmlspecialchars(
+                            $usuario['email']
+                        );
+
+                        ?>
+
+                    </td>
+
+
+                    <td>
+
+                        <?php
+
+
+                        /*
+                        ==================================================
+                        FICHADO
+                        ==================================================
+                        */
+
                         if($fichado){
 
                             echo
-                                "<span class='badge-rol'>Fichado</span>";
+                                "<span class='badge-rol'>
+                                    Fichado
+                                </span>";
 
-                        }else{
+                        }
+
+
+                        /*
+                        ==================================================
+                        VACACIONES
+                        ==================================================
+                        */
+
+                        elseif(
+                            $estadoNoFichar ===
+                            "vacaciones"
+                        ){
 
                             echo
                                 "<span
                                     class='badge-rol'
-                                    style='background:#dc3545;'
+                                    style='
+                                        background:#f59e0b;
+                                    '
+                                >
+                                    Vacaciones
+                                </span>";
+
+                        }
+
+
+                        /*
+                        ==================================================
+                        BAJA
+                        ==================================================
+                        */
+
+                        elseif(
+                            $estadoNoFichar ===
+                            "baja"
+                        ){
+
+                            echo
+                                "<span
+                                    class='badge-rol'
+                                    style='
+                                        background:#dc3545;
+                                    '
+                                >
+                                    Baja
+                                </span>";
+
+                        }
+
+
+                        /*
+                        ==================================================
+                        PENDIENTE
+                        ==================================================
+                        */
+
+                        else{
+
+                            echo
+                                "<span
+                                    class='badge-rol'
+                                    style='
+                                        background:#dc3545;
+                                    '
                                 >
                                     Pendiente
                                 </span>";

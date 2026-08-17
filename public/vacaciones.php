@@ -78,6 +78,7 @@ if(isset($_POST["guardar"])){
 
     if($_POST["tipo"] == "vacaciones"){
 
+    $resultadoVacaciones =
         $vacacionesModel->crearVacaciones(
             $_POST["usuario_id"],
             $_POST["fecha_inicio"],
@@ -85,8 +86,63 @@ if(isset($_POST["guardar"])){
             $_POST["comentario"]
         );
 
-        $mensaje = "Vacaciones registradas correctamente.";
+
+    /*
+    ==========================================================
+    YA EXISTE UN FICHAJE
+    ==========================================================
+    */
+
+    if(
+        is_array($resultadoVacaciones) &&
+        isset($resultadoVacaciones['ok']) &&
+        $resultadoVacaciones['ok'] === false &&
+        isset($resultadoVacaciones['tipo']) &&
+        $resultadoVacaciones['tipo'] === 'fichaje'
+    ){
+
+        $fechaFichaje = date(
+            "d/m/Y",
+            strtotime($resultadoVacaciones['fecha'])
+        );
+
+        $mensaje =
+            "No se pueden registrar las vacaciones. "
+            . "El empleado ya tiene un fichaje el día "
+            . $fechaFichaje
+            . ".";
+
     }
+
+    /*
+    ==========================================================
+    VACACIONES CREADAS CORRECTAMENTE
+    ==========================================================
+    */
+
+    elseif(
+        is_array($resultadoVacaciones) &&
+        isset($resultadoVacaciones['ok']) &&
+        $resultadoVacaciones['ok'] === true
+    ){
+
+        $mensaje =
+            "Vacaciones registradas correctamente.";
+
+    }
+
+    /*
+    ==========================================================
+    ERROR
+    ==========================================================
+    */
+
+    else{
+
+        $mensaje =
+            "No se han podido registrar las vacaciones.";
+    }
+}
 
 
     /*

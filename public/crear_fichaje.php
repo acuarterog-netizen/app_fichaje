@@ -158,6 +158,47 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     /*
     ==========================================================================
+       COMPROBAR VACACIONES / BAJA
+    ==========================================================================
+    */
+
+    if(
+        $error == "" &&
+        $usuario_id != "" &&
+        $fecha != ""
+    ) {
+
+        $estado =
+            $fichajeModel->estadoNoFichar(
+                $usuario_id,
+                $fecha
+            );
+
+
+        if($estado === "vacaciones") {
+
+            $error =
+                "No se puede crear el fichaje porque el empleado está de vacaciones el día "
+                . date("d/m/Y", strtotime($fecha))
+                . ".";
+
+        }
+
+
+        elseif($estado === "baja") {
+
+            $error =
+                "No se puede crear el fichaje porque el empleado está de baja el día "
+                . date("d/m/Y", strtotime($fecha))
+                . ".";
+
+        }
+
+    }
+
+
+    /*
+    ==========================================================================
        COMPROBAR HORARIOS
     ==========================================================================
     */
@@ -224,8 +265,43 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         } else {
 
-            $error =
-                "Error al crear el fichaje.";
+            /*
+            ==============================================================
+               POR SI EL MODELO BLOQUEA EL FICHAJE
+            ==============================================================
+            */
+
+            $estado =
+                $fichajeModel->estadoNoFichar(
+                    $usuario_id,
+                    $fecha
+                );
+
+
+            if($estado === "vacaciones") {
+
+                $error =
+                    "No se puede crear el fichaje porque el empleado está de vacaciones el día "
+                    . date("d/m/Y", strtotime($fecha))
+                    . ".";
+
+            }
+
+            elseif($estado === "baja") {
+
+                $error =
+                    "No se puede crear el fichaje porque el empleado está de baja el día "
+                    . date("d/m/Y", strtotime($fecha))
+                    . ".";
+
+            }
+
+            else {
+
+                $error =
+                    "Error al crear el fichaje.";
+
+            }
 
         }
 
@@ -257,10 +333,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 }
 
-
-/* ==========================================================================
-   HEADER Y SIDEBAR
-========================================================================== */
 
 include "../views/layouts/header.php";
 
@@ -349,9 +421,11 @@ include "../views/layouts/sidebar.php";
                     >
 
                         <?php
+
                         echo htmlspecialchars(
                             $empresa['nombre']
                         );
+
                         ?>
 
                     </option>
@@ -361,7 +435,6 @@ include "../views/layouts/sidebar.php";
             </select>
 
         </div>
-
 
 
         <!-- ==============================================================
@@ -377,6 +450,7 @@ include "../views/layouts/sidebar.php";
                 name="usuario_id"
                 class="form-control"
                 required
+
                 <?php
 
                 if($empresaSeleccionada == "") {
@@ -386,6 +460,7 @@ include "../views/layouts/sidebar.php";
                 }
 
                 ?>
+
             >
 
 
@@ -423,9 +498,11 @@ include "../views/layouts/sidebar.php";
                         >
 
                             <?php
+
                             echo htmlspecialchars(
                                 $usuario['nombre']
                             );
+
                             ?>
 
                         </option>
@@ -448,7 +525,6 @@ include "../views/layouts/sidebar.php";
             </select>
 
         </div>
-
 
 
         <!-- ==============================================================
@@ -477,7 +553,6 @@ include "../views/layouts/sidebar.php";
         </div>
 
 
-
         <!-- ==============================================================
              HORA ENTRADA
         ============================================================== -->
@@ -502,7 +577,6 @@ include "../views/layouts/sidebar.php";
             >
 
         </div>
-
 
 
         <!-- ==============================================================
@@ -531,7 +605,6 @@ include "../views/layouts/sidebar.php";
         </div>
 
 
-
         <!-- ==============================================================
              FIN DESCANSO
         ============================================================== -->
@@ -556,7 +629,6 @@ include "../views/layouts/sidebar.php";
             >
 
         </div>
-
 
 
         <!-- ==============================================================
@@ -585,7 +657,6 @@ include "../views/layouts/sidebar.php";
         </div>
 
 
-
         <!-- ==============================================================
              BOTÓN
         ============================================================== -->
@@ -593,6 +664,7 @@ include "../views/layouts/sidebar.php";
         <button
             type="submit"
             class="btn-main-blue"
+
             <?php
 
             if($empresaSeleccionada == "") {
@@ -615,14 +687,14 @@ include "../views/layouts/sidebar.php";
 </div>
 
 
-
 <script>
 
 function cambiarEmpresa(empresaId) {
 
     if(empresaId === "") {
 
-        window.location.href = "crear_fichaje.php";
+        window.location.href =
+            "crear_fichaje.php";
 
         return;
 
