@@ -14,6 +14,7 @@ class Vacaciones {
 
         $this->conexion =
             $database->conectar();
+
     }
 
 
@@ -22,105 +23,132 @@ class Vacaciones {
     ========================================================== */
 
     public function crearVacaciones(
-    $usuario_id,
-    $fecha_inicio,
-    $fecha_fin,
-    $comentario = "",
-    $creado_por = null
-){
+        $usuario_id,
+        $fecha_inicio,
+        $fecha_fin,
+        $comentario = "",
+        $creado_por = null
+    ){
 
-    /*
-    ==========================================================
-    COMPROBAR SI YA EXISTE UN FICHAJE EN ESAS FECHAS
-    ==========================================================
-    */
+        /*
+        ==========================================================
+        COMPROBAR SI YA EXISTE UN FICHAJE EN ESAS FECHAS
+        ==========================================================
+        */
 
-    $sqlComprobar = "
-        SELECT fecha
-        FROM fichajes
-        WHERE usuario_id = :usuario_id
-        AND fecha BETWEEN :fecha_inicio AND :fecha_fin
-        LIMIT 1
-    ";
+        $sqlComprobar = "
+            SELECT fecha
+            FROM fichajes
+            WHERE usuario_id = :usuario_id
+            AND fecha BETWEEN :fecha_inicio AND :fecha_fin
+            LIMIT 1
+        ";
 
-    $stmtComprobar = $this->conexion->prepare($sqlComprobar);
+        $stmtComprobar =
+            $this->conexion->prepare(
+                $sqlComprobar
+            );
 
-    $stmtComprobar->execute([
-        ':usuario_id'  => $usuario_id,
-        ':fecha_inicio' => $fecha_inicio,
-        ':fecha_fin'    => $fecha_fin
-    ]);
+        $stmtComprobar->execute([
+            ':usuario_id' =>
+                $usuario_id,
 
-    $fichaje = $stmtComprobar->fetch(PDO::FETCH_ASSOC);
+            ':fecha_inicio' =>
+                $fecha_inicio,
+
+            ':fecha_fin' =>
+                $fecha_fin
+        ]);
+
+        $fichaje =
+            $stmtComprobar->fetch(
+                PDO::FETCH_ASSOC
+            );
 
 
-    /*
-    ==========================================================
-    SI YA HAY FICHAJE
-    ==========================================================
-    */
+        /*
+        ==========================================================
+        SI YA HAY FICHAJE
+        ==========================================================
+        */
 
-    if($fichaje){
+        if($fichaje){
+
+            return [
+                'ok' => false,
+                'tipo' => 'fichaje',
+                'fecha' => $fichaje['fecha']
+            ];
+
+        }
+
+
+        /*
+        ==========================================================
+        CREAR VACACIONES
+        ==========================================================
+        */
+
+        $sql = "
+            INSERT INTO vacaciones
+            (
+                usuario_id,
+                fecha_inicio,
+                fecha_fin,
+                comentario,
+                creado_por,
+                estado
+            )
+            VALUES
+            (
+                :usuario_id,
+                :fecha_inicio,
+                :fecha_fin,
+                :comentario,
+                :creado_por,
+                'aprobada'
+            )
+        ";
+
+        $stmt =
+            $this->conexion->prepare(
+                $sql
+            );
+
+        $resultado =
+            $stmt->execute([
+                ':usuario_id' =>
+                    $usuario_id,
+
+                ':fecha_inicio' =>
+                    $fecha_inicio,
+
+                ':fecha_fin' =>
+                    $fecha_fin,
+
+                ':comentario' =>
+                    $comentario,
+
+                ':creado_por' =>
+                    $creado_por
+            ]);
+
+
+        if($resultado){
+
+            return [
+                'ok' => true
+            ];
+
+        }
+
 
         return [
             'ok' => false,
-            'tipo' => 'fichaje',
-            'fecha' => $fichaje['fecha']
-        ];
-    }
-
-
-    /*
-    ==========================================================
-    CREAR VACACIONES
-    ==========================================================
-    */
-
-    $sql = "
-        INSERT INTO vacaciones
-        (
-            usuario_id,
-            fecha_inicio,
-            fecha_fin,
-            comentario,
-            creado_por,
-            estado
-        )
-        VALUES
-        (
-            :usuario_id,
-            :fecha_inicio,
-            :fecha_fin,
-            :comentario,
-            :creado_por,
-            'aprobada'
-        )
-    ";
-
-    $stmt = $this->conexion->prepare($sql);
-
-    $resultado = $stmt->execute([
-        ':usuario_id'   => $usuario_id,
-        ':fecha_inicio' => $fecha_inicio,
-        ':fecha_fin'    => $fecha_fin,
-        ':comentario'   => $comentario,
-        ':creado_por'   => $creado_por
-    ]);
-
-
-    if($resultado){
-
-        return [
-            'ok' => true
+            'tipo' => 'error'
         ];
 
     }
-
-    return [
-        'ok' => false,
-        'tipo' => 'error'
-    ];
-}
 
 
     /* ==========================================================
@@ -151,18 +179,18 @@ class Vacaciones {
                 fecha_inicio DESC
         ";
 
-
         $stmt =
-            $this->conexion->prepare($sql);
-
+            $this->conexion->prepare(
+                $sql
+            );
 
         $stmt->execute();
-
 
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -186,34 +214,26 @@ class Vacaciones {
                 fecha_inicio DESC
         ";
 
-
         $stmt =
-            $this->conexion->prepare($sql);
-
+            $this->conexion->prepare(
+                $sql
+            );
 
         $stmt->execute([
             ':usuario_id' =>
                 $usuario_id
         ]);
 
-
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
     /* ==========================================================
        VACACIONES PARA HISTORIAL
-       
-       Si se indica mes:
-       - Solo devuelve periodos que coincidan
-         con ese mes.
-       - Recorta el inicio y final al mes.
-       
-       Si no se indica mes:
-       - Devuelve todos los periodos aprobados.
     ========================================================== */
 
     public function obtenerVacacionesEmpleado(
@@ -242,12 +262,10 @@ class Vacaciones {
                     fecha_inicio DESC
             ";
 
-
             $stmt =
                 $this->conexion->prepare(
                     $sql
                 );
-
 
             $stmt->execute([
                 ':usuario_id' =>
@@ -258,7 +276,6 @@ class Vacaciones {
 
             $inicioMes =
                 $mes . "-01";
-
 
             $finMes =
                 date(
@@ -294,15 +311,12 @@ class Vacaciones {
                     fecha_inicio DESC
             ";
 
-
             $stmt =
                 $this->conexion->prepare(
                     $sql
                 );
 
-
             $stmt->execute([
-
                 ':usuario_id' =>
                     $usuario_id,
 
@@ -311,7 +325,6 @@ class Vacaciones {
 
                 ':fin_mes' =>
                     $finMes
-
             ]);
 
         }
@@ -334,12 +347,6 @@ class Vacaciones {
                 $fila['fecha_fin'];
 
 
-            /*
-            ----------------------------------------------------------
-            RECORTAR AL MES
-            ----------------------------------------------------------
-            */
-
             if($mes != ""){
 
                 if(
@@ -349,6 +356,7 @@ class Vacaciones {
 
                     $inicio =
                         $inicioMes;
+
                 }
 
 
@@ -359,16 +367,21 @@ class Vacaciones {
 
                     $fin =
                         $finMes;
+
                 }
 
             }
 
 
             $timestampInicio =
-                strtotime($inicio);
+                strtotime(
+                    $inicio
+                );
 
             $timestampFin =
-                strtotime($fin);
+                strtotime(
+                    $fin
+                );
 
 
             $dias =
@@ -395,10 +408,12 @@ class Vacaciones {
 
             $resultado[] =
                 $fila;
+
         }
 
 
         return $resultado;
+
     }
 
 
@@ -415,17 +430,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':id' =>
+                    $id
+            ]);
 
-        return $stmt->execute([
-            ':id' =>
-                $id
-        ]);
     }
 
 
@@ -454,25 +469,23 @@ class Vacaciones {
             )
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':empresa_id' =>
+                    $empresa_id,
 
-        return $stmt->execute([
+                ':fecha' =>
+                    $fecha,
 
-            ':empresa_id' =>
-                $empresa_id,
+                ':nombre' =>
+                    $nombre
+            ]);
 
-            ':fecha' =>
-                $fecha,
-
-            ':nombre' =>
-                $nombre
-
-        ]);
     }
 
 
@@ -486,11 +499,13 @@ class Vacaciones {
         $nombre
     ){
 
-        return $this->crearFestivo(
-            $empresa_id,
-            $fecha,
-            $nombre
-        );
+        return
+            $this->crearFestivo(
+                $empresa_id,
+                $fecha,
+                $nombre
+            );
+
     }
 
 
@@ -515,20 +530,18 @@ class Vacaciones {
                 fecha
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute();
-
 
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -545,17 +558,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':id' =>
+                    $id
+            ]);
 
-        return $stmt->execute([
-            ':id' =>
-                $id
-        ]);
     }
 
 
@@ -587,28 +600,26 @@ class Vacaciones {
             )
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':empresa_id' =>
+                    $empresa_id,
 
-        return $stmt->execute([
+                ':fecha_inicio' =>
+                    $fecha_inicio,
 
-            ':empresa_id' =>
-                $empresa_id,
+                ':fecha_fin' =>
+                    $fecha_fin,
 
-            ':fecha_inicio' =>
-                $fecha_inicio,
+                ':motivo' =>
+                    $motivo
+            ]);
 
-            ':fecha_fin' =>
-                $fecha_fin,
-
-            ':motivo' =>
-                $motivo
-
-        ]);
     }
 
 
@@ -633,20 +644,18 @@ class Vacaciones {
                 fecha_inicio
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute();
-
 
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -663,17 +672,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':id' =>
+                    $id
+            ]);
 
-        return $stmt->execute([
-            ':id' =>
-                $id
-        ]);
     }
 
 
@@ -722,6 +731,12 @@ class Vacaciones {
                     );
 
 
+                /*
+                ==================================================
+                CREAR ESTRUCTURA DEL DÍA
+                ==================================================
+                */
+
                 if(
                     !isset(
                         $diasVacaciones[
@@ -738,11 +753,21 @@ class Vacaciones {
                             [],
 
                         "usuarios" =>
+                            [],
+
+                        "empresas" =>
                             []
 
                     ];
+
                 }
 
+
+                /*
+                ==================================================
+                GUARDAR VACACIÓN
+                ==================================================
+                */
 
                 $diasVacaciones[
                     $fecha
@@ -755,10 +780,22 @@ class Vacaciones {
                         $v["nombre"],
 
                     "empresa" =>
-                        $v["empresa"]
+                        $v["empresa"],
+
+                    "empresa_id" =>
+                        (int)$v["empresa_id"],
+
+                    "usuario_id" =>
+                        (int)$v["usuario_id"]
 
                 ];
 
+
+                /*
+                ==================================================
+                GUARDAR USUARIO
+                ==================================================
+                */
 
                 $diasVacaciones[
                     $fecha
@@ -766,28 +803,172 @@ class Vacaciones {
                     (int)$v["usuario_id"];
 
 
+                /*
+                ==================================================
+                GUARDAR EMPRESA
+                ==================================================
+                */
+
+                if(
+                    isset(
+                        $v["empresa_id"]
+                    )
+                    &&
+                    $v["empresa_id"] !== ""
+                    &&
+                    $v["empresa_id"] !== null
+                ){
+
+                    $diasVacaciones[
+                        $fecha
+                    ]["empresas"][] =
+                        (int)$v["empresa_id"];
+
+                }
+
+
                 $inicio =
                     strtotime(
                         "+1 day",
                         $inicio
                     );
+
             }
 
         }
 
+
+        /*
+        ==========================================================
+        CREAR EVENTOS DE VACACIONES
+        ==========================================================
+        */
 
         foreach(
             $diasVacaciones
             as $fecha => $datos
         ){
 
+            /*
+            ======================================================
+            OBTENER NOMBRES DE LOS EMPLEADOS
+            ======================================================
+            */
+
+            $nombresEmpleados = [];
+
+
+            foreach(
+                $datos["vacaciones"]
+                as $vacacion
+            ){
+
+                if(
+                    !empty(
+                        $vacacion["empleado"]
+                    )
+                ){
+
+                    $nombresEmpleados[] =
+                        $vacacion["empleado"];
+
+                }
+
+            }
+
+
+            /*
+            ======================================================
+            QUITAR NOMBRES DUPLICADOS
+            ======================================================
+            */
+
+            $nombresEmpleados =
+                array_values(
+                    array_unique(
+                        $nombresEmpleados
+                    )
+                );
+
+
+            /*
+            ======================================================
+            CREAR TÍTULO
+            ======================================================
+            */
+
+            $tituloVacaciones =
+                "VACACIONES";
+
+
+            if(
+                count(
+                    $nombresEmpleados
+                ) > 0
+            ){
+
+                $tituloVacaciones .=
+                    " - " .
+                    implode(
+                        ", ",
+                        $nombresEmpleados
+                    );
+
+            }
+
+
+            /*
+            ======================================================
+            EMPRESAS DEL EVENTO
+            ======================================================
+            */
+
+            $empresaIds =
+                array_values(
+                    array_unique(
+                        array_map(
+                            "intval",
+                            $datos["empresas"]
+                        )
+                    )
+                );
+
+
+            /*
+            ======================================================
+            EMPRESA PRINCIPAL
+            ======================================================
+            */
+
+            $empresaPrincipal = 0;
+
+
+            if(
+                count(
+                    $empresaIds
+                ) > 0
+            ){
+
+                $empresaPrincipal =
+                    (int)$empresaIds[0];
+
+            }
+
+
+            /*
+            ======================================================
+            CREAR EVENTO
+            ======================================================
+            */
+
             $eventos[] = [
 
                 "id" =>
-                    "vac_" . $fecha,
+                    "vac_" .
+                    $fecha,
 
                 "title" =>
-                    "●",
+                    $tituloVacaciones,
 
                 "start" =>
                     $fecha,
@@ -817,24 +998,67 @@ class Vacaciones {
                             "vacaciones"
                         ],
 
+                    /*
+                    ==============================================
+                    USUARIOS
+                    ==============================================
+                    */
+
                     "usuarios" =>
                         array_values(
                             array_unique(
-                                $datos[
-                                    "usuarios"
-                                ]
+                                array_map(
+                                    "intval",
+                                    $datos[
+                                        "usuarios"
+                                    ]
+                                )
                             )
                         ),
+
+                    /*
+                    ==============================================
+                    EMPRESA ID PRINCIPAL
+                    ==============================================
+                    */
+
+                    "empresa_id" =>
+                        $empresaPrincipal,
+
+                    /*
+                    ==============================================
+                    TODAS LAS EMPRESAS DEL EVENTO
+                    ==============================================
+                    */
+
+                    "empresa_ids" =>
+                        $empresaIds,
+
+                    /*
+                    ==============================================
+                    EMPRESA
+                    ==============================================
+                    */
 
                     "empresa" =>
                         $datos[
                             "vacaciones"
                         ][0]["empresa"]
-                        ?? ""
+                        ?? "",
+
+                    /*
+                    ==============================================
+                    EMPLEADOS
+                    ==============================================
+                    */
+
+                    "empleados" =>
+                        $nombresEmpleados
 
                 ]
 
             ];
+
         }
 
 
@@ -849,13 +1073,68 @@ class Vacaciones {
             as $f
         ){
 
+            /*
+            ======================================================
+            NOMBRE DEL FESTIVO
+            ======================================================
+            */
+
+            $nombreFestivo =
+                trim(
+                    $f["nombre"]
+                    ?? ""
+                );
+
+
+            /*
+            ======================================================
+            TÍTULO DEL FESTIVO
+            ======================================================
+            */
+
+            $tituloFestivo =
+                "FESTIVO";
+
+
+            if(
+                $nombreFestivo !== ""
+            ){
+
+                $tituloFestivo .=
+                    " - " .
+                    $nombreFestivo;
+
+            }
+
+
+            /*
+            ======================================================
+            EMPRESA
+            ======================================================
+            */
+
+            $empresaId =
+                isset(
+                    $f["empresa_id"]
+                )
+                ? (int)$f["empresa_id"]
+                : 0;
+
+
+            /*
+            ======================================================
+            CREAR EVENTO
+            ======================================================
+            */
+
             $eventos[] = [
 
                 "id" =>
-                    "fest_" . $f["id"],
+                    "fest_" .
+                    $f["id"],
 
                 "title" =>
-                    "📅",
+                    $tituloFestivo,
 
                 "start" =>
                     $f["fecha"],
@@ -880,17 +1159,25 @@ class Vacaciones {
                     "tipo" =>
                         "festivo",
 
+                    "empresa_id" =>
+                        $empresaId,
+
+                    "empresa_ids" =>
+                        $empresaId > 0
+                            ? [$empresaId]
+                            : [],
+
                     "empresa" =>
                         $f["empresa"]
                         ?? "",
 
                     "motivo" =>
-                        $f["nombre"]
-                        ?? ""
+                        $nombreFestivo
 
                 ]
 
             ];
+
         }
 
 
@@ -905,10 +1192,19 @@ class Vacaciones {
             as $b
         ){
 
+            $empresaId =
+                isset(
+                    $b["empresa_id"]
+                )
+                ? (int)$b["empresa_id"]
+                : 0;
+
+
             $eventos[] = [
 
                 "id" =>
-                    "bloq_" . $b["id"],
+                    "bloq_" .
+                    $b["id"],
 
                 "title" =>
                     "",
@@ -934,15 +1230,25 @@ class Vacaciones {
                 "extendedProps" => [
 
                     "tipo" =>
-                        "bloqueo"
+                        "bloqueo",
+
+                    "empresa_id" =>
+                        $empresaId,
+
+                    "empresa_ids" =>
+                        $empresaId > 0
+                            ? [$empresaId]
+                            : []
 
                 ]
 
             ];
+
         }
 
 
         return $eventos;
+
     }
 
 
@@ -954,6 +1260,7 @@ class Vacaciones {
 
         return
             $this->obtenerEventosCalendario();
+
     }
 
 
@@ -986,20 +1293,18 @@ class Vacaciones {
                 vacaciones.fecha_inicio ASC
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute();
-
 
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -1020,17 +1325,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':id' =>
+                    $id
+            ]);
 
-        return $stmt->execute([
-            ':id' =>
-                $id
-        ]);
     }
 
 
@@ -1051,17 +1356,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
+        return
+            $stmt->execute([
+                ':id' =>
+                    $id
+            ]);
 
-        return $stmt->execute([
-            ':id' =>
-                $id
-        ]);
     }
 
 
@@ -1095,15 +1400,12 @@ class Vacaciones {
             LIMIT 1
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
-
             ':usuario_id' =>
                 $usuario_id,
 
@@ -1112,14 +1414,13 @@ class Vacaciones {
 
             ':fin' =>
                 $fin
-
         ]);
-
 
         return
             $stmt->fetch(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -1147,28 +1448,24 @@ class Vacaciones {
             LIMIT 1
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
-
             ':empresa_id' =>
                 $empresa_id,
 
             ':fecha' =>
                 $fecha
-
         ]);
-
 
         return
             $stmt->fetch(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -1194,18 +1491,15 @@ class Vacaciones {
                 'aprobada'
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
             ':usuario_id' =>
                 $usuario_id
         ]);
-
 
         $dias = 0;
 
@@ -1235,10 +1529,12 @@ class Vacaciones {
                         $inicio
                     ) / 86400
                 ) + 1;
+
         }
 
 
         return $dias;
+
     }
 
 
@@ -1256,6 +1552,7 @@ class Vacaciones {
             $this->diasConsumidos(
                 $usuario_id
             );
+
     }
 
 
@@ -1283,6 +1580,7 @@ class Vacaciones {
                 30
 
         ];
+
     }
 
 
@@ -1295,6 +1593,7 @@ class Vacaciones {
         return count(
             $this->obtenerEventosCalendario()
         );
+
     }
 
 
@@ -1308,7 +1607,6 @@ class Vacaciones {
 
         $sql = "
             SELECT
-
                 MIN(vacaciones.id)
                     AS id,
 
@@ -1346,23 +1644,21 @@ class Vacaciones {
                 usuarios.nombre
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
-
 
         $stmt->execute([
             ":fecha" =>
                 $fecha
         ]);
 
-
         return
             $stmt->fetchAll(
                 PDO::FETCH_ASSOC
             );
+
     }
 
 
@@ -1383,18 +1679,15 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
             ":id" =>
                 $id
         ]);
-
 
         $vacacion =
             $stmt->fetch(
@@ -1403,7 +1696,9 @@ class Vacaciones {
 
 
         if(!$vacacion){
+
             return;
+
         }
 
 
@@ -1424,15 +1719,14 @@ class Vacaciones {
 
             $sql = "
                 DELETE FROM vacaciones
+
                 WHERE id = :id
             ";
-
 
             $stmt =
                 $this->conexion->prepare(
                     $sql
                 );
-
 
             $stmt->execute([
                 ":id" =>
@@ -1440,6 +1734,7 @@ class Vacaciones {
             ]);
 
             return;
+
         }
 
 
@@ -1470,24 +1765,21 @@ class Vacaciones {
                 WHERE id = :id
             ";
 
-
             $stmt =
                 $this->conexion->prepare(
                     $sql
                 );
 
-
             $stmt->execute([
-
                 ":inicio" =>
                     $nuevoInicio,
 
                 ":id" =>
                     $id
-
             ]);
 
             return;
+
         }
 
 
@@ -1518,24 +1810,21 @@ class Vacaciones {
                 WHERE id = :id
             ";
 
-
             $stmt =
                 $this->conexion->prepare(
                     $sql
                 );
 
-
             $stmt->execute([
-
                 ":fin" =>
                     $nuevoFin,
 
                 ":id" =>
                     $id
-
             ]);
 
             return;
+
         }
 
 
@@ -1578,21 +1867,17 @@ class Vacaciones {
             WHERE id = :id
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
-
             ":fin" =>
                 $finPrimera,
 
             ":id" =>
                 $id
-
         ]);
 
 
@@ -1620,15 +1905,12 @@ class Vacaciones {
             )
         ";
 
-
         $stmt =
             $this->conexion->prepare(
                 $sql
             );
 
-
         $stmt->execute([
-
             ":usuario" =>
                 $vacacion[
                     "usuario_id"
@@ -1649,38 +1931,56 @@ class Vacaciones {
                 $vacacion[
                     "comentario"
                 ]
-
         ]);
+
     }
 
-/* ==========================================================
-   FESTIVOS POR FECHA
-========================================================== */
 
-public function obtenerFestivosPorFecha($fecha){
+    /* ==========================================================
+       FESTIVOS POR FECHA
+    ========================================================== */
 
-    $sql = "SELECT
+    public function obtenerFestivosPorFecha(
+        $fecha
+    ){
+
+        $sql = "
+            SELECT
                 festivos.id,
                 festivos.empresa_id,
                 festivos.fecha,
                 festivos.nombre,
                 empresas.nombre AS empresa
+
             FROM festivos
 
             LEFT JOIN empresas
-                ON festivos.empresa_id = empresas.id
+                ON festivos.empresa_id =
+                   empresas.id
 
-            WHERE festivos.fecha = :fecha
+            WHERE festivos.fecha =
+                  :fecha
 
-            ORDER BY empresas.nombre, festivos.nombre";
+            ORDER BY
+                empresas.nombre,
+                festivos.nombre
+        ";
 
-    $stmt = $this->conexion->prepare($sql);
+        $stmt =
+            $this->conexion->prepare(
+                $sql
+            );
 
-    $stmt->execute([
-        ':fecha' => $fecha
-    ]);
+        $stmt->execute([
+            ':fecha' =>
+                $fecha
+        ]);
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+        return
+            $stmt->fetchAll(
+                PDO::FETCH_ASSOC
+            );
+
+    }
 
 }

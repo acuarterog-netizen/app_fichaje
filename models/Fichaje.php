@@ -951,5 +951,125 @@ public function crearFichajesMasivos($usuarios){
 
     }
 
+public function obtenerResumenHorasEmpleado($usuario_id, $mes = "") {
 
+    if($mes == "") {
+        $mes = date("Y-m");
+    }
+
+
+    /*
+    ==========================================================
+    HORAS TOTALES
+    ==========================================================
+    */
+
+    $sqlTotal = "
+        SELECT
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN hora_entrada IS NOT NULL
+                        AND hora_salida IS NOT NULL
+                        THEN
+                            TIME_TO_SEC(hora_salida)
+                            - TIME_TO_SEC(hora_entrada)
+                            -
+                            CASE
+                                WHEN inicio_descanso IS NOT NULL
+                                AND fin_descanso IS NOT NULL
+                                THEN
+                                    TIME_TO_SEC(fin_descanso)
+                                    - TIME_TO_SEC(inicio_descanso)
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS segundos_totales
+
+        FROM fichajes
+
+        WHERE usuario_id = :usuario_id
+    ";
+
+
+    $stmtTotal =
+        $this->conexion->prepare($sqlTotal);
+
+
+    $stmtTotal->execute([
+        ":usuario_id" => $usuario_id
+    ]);
+
+
+    $resultadoTotal =
+        $stmtTotal->fetch(PDO::FETCH_ASSOC);
+
+
+    /*
+    ==========================================================
+    HORAS DEL MES
+    ==========================================================
+    */
+
+    $sqlMes = "
+        SELECT
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN hora_entrada IS NOT NULL
+                        AND hora_salida IS NOT NULL
+                        THEN
+                            TIME_TO_SEC(hora_salida)
+                            - TIME_TO_SEC(hora_entrada)
+                            -
+                            CASE
+                                WHEN inicio_descanso IS NOT NULL
+                                AND fin_descanso IS NOT NULL
+                                THEN
+                                    TIME_TO_SEC(fin_descanso)
+                                    - TIME_TO_SEC(inicio_descanso)
+                                ELSE 0
+                            END
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS segundos_mes
+
+        FROM fichajes
+
+        WHERE usuario_id = :usuario_id
+
+        AND DATE_FORMAT(fecha, '%Y-%m') = :mes
+    ";
+
+
+    $stmtMes =
+        $this->conexion->prepare($sqlMes);
+
+
+    $stmtMes->execute([
+        ":usuario_id" => $usuario_id,
+        ":mes" => $mes
+    ]);
+
+
+    $resultadoMes =
+        $stmtMes->fetch(PDO::FETCH_ASSOC);
+
+
+    return [
+
+        "segundos_totales" =>
+            (int)($resultadoTotal["segundos_totales"] ?? 0),
+
+        "segundos_mes" =>
+            (int)($resultadoMes["segundos_mes"] ?? 0)
+
+    ];
+
+}
 }

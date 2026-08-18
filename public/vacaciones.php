@@ -5,17 +5,25 @@ require_once "../models/Vacaciones.php";
 require_once "../models/Usuario.php";
 require_once "../models/Empresa.php";
 
+
 Auth::verificarSesion();
+
 
 if(
     $_SESSION["usuario"]["rol"] != "admin" &&
     $_SESSION["usuario"]["rol"] != "encargado"
 ){
-    header("Location: dashboard.php");
+
+    header(
+        "Location: dashboard.php"
+    );
+
     exit;
 }
 
-$vacacionesModel = new Vacaciones();
+
+$vacacionesModel =
+    new Vacaciones();
 
 
 /*
@@ -27,11 +35,17 @@ ELIMINAR VACACIONES
 if(isset($_GET["eliminar"])){
 
     $vacacionesModel->eliminarVacaciones(
+
         $_GET["eliminar"],
+
         $_GET["fecha"]
+
     );
 
-    header("Location: vacaciones.php");
+    header(
+        "Location: vacaciones.php"
+    );
+
     exit;
 }
 
@@ -45,19 +59,32 @@ ELIMINAR FESTIVO
 if(isset($_GET["eliminar_festivo"])){
 
     $vacacionesModel->eliminarFestivo(
+
         $_GET["eliminar_festivo"]
+
     );
 
-    header("Location: vacaciones.php");
+    header(
+        "Location: vacaciones.php"
+    );
+
     exit;
 }
 
 
-$usuarioModel = new Usuario();
-$empresaModel = new Empresa();
+$usuarioModel =
+    new Usuario();
 
-$usuarios = $usuarioModel->obtenerEmpleados();
-$empresas = $empresaModel->obtenerEmpresas();
+$empresaModel =
+    new Empresa();
+
+
+$usuarios =
+    $usuarioModel->obtenerEmpleados();
+
+$empresas =
+    $empresaModel->obtenerEmpresas();
+
 
 $mensaje = "";
 
@@ -76,73 +103,103 @@ if(isset($_POST["guardar"])){
     ========================================================
     */
 
-    if($_POST["tipo"] == "vacaciones"){
-
-    $resultadoVacaciones =
-        $vacacionesModel->crearVacaciones(
-            $_POST["usuario_id"],
-            $_POST["fecha_inicio"],
-            $_POST["fecha_fin"],
-            $_POST["comentario"]
-        );
-
-
-    /*
-    ==========================================================
-    YA EXISTE UN FICHAJE
-    ==========================================================
-    */
-
     if(
-        is_array($resultadoVacaciones) &&
-        isset($resultadoVacaciones['ok']) &&
-        $resultadoVacaciones['ok'] === false &&
-        isset($resultadoVacaciones['tipo']) &&
-        $resultadoVacaciones['tipo'] === 'fichaje'
+        isset($_POST["tipo"]) &&
+        $_POST["tipo"] == "vacaciones"
     ){
 
-        $fechaFichaje = date(
-            "d/m/Y",
-            strtotime($resultadoVacaciones['fecha'])
-        );
+        $resultadoVacaciones =
+            $vacacionesModel->crearVacaciones(
 
-        $mensaje =
-            "No se pueden registrar las vacaciones. "
-            . "El empleado ya tiene un fichaje el día "
-            . $fechaFichaje
-            . ".";
+                $_POST["usuario_id"],
+
+                $_POST["fecha_inicio"],
+
+                $_POST["fecha_fin"],
+
+                $_POST["comentario"] ?? ""
+
+            );
+
+
+        /*
+        ======================================================
+        YA EXISTE UN FICHAJE
+        ======================================================
+        */
+
+        if(
+
+            is_array($resultadoVacaciones) &&
+
+            isset(
+                $resultadoVacaciones["ok"]
+            ) &&
+
+            $resultadoVacaciones["ok"] === false &&
+
+            isset(
+                $resultadoVacaciones["tipo"]
+            ) &&
+
+            $resultadoVacaciones["tipo"] ===
+            "fichaje"
+
+        ){
+
+            $fechaFichaje =
+                date(
+                    "d/m/Y",
+                    strtotime(
+                        $resultadoVacaciones["fecha"]
+                    )
+                );
+
+
+            $mensaje =
+                "No se pueden registrar las vacaciones. "
+                .
+                "El empleado ya tiene un fichaje el día "
+                .
+                $fechaFichaje
+                .
+                ".";
+
+        }
+
+
+        /*
+        ======================================================
+        VACACIONES CREADAS
+        ======================================================
+        */
+
+        elseif(
+
+            is_array($resultadoVacaciones) &&
+
+            isset(
+                $resultadoVacaciones["ok"]
+            ) &&
+
+            $resultadoVacaciones["ok"] === true
+
+        ){
+
+            $mensaje =
+                "Vacaciones registradas correctamente.";
+
+        }
+
+
+        else{
+
+            $mensaje =
+                "No se han podido registrar las vacaciones.";
+
+        }
 
     }
-
-    /*
-    ==========================================================
-    VACACIONES CREADAS CORRECTAMENTE
-    ==========================================================
-    */
-
-    elseif(
-        is_array($resultadoVacaciones) &&
-        isset($resultadoVacaciones['ok']) &&
-        $resultadoVacaciones['ok'] === true
-    ){
-
-        $mensaje =
-            "Vacaciones registradas correctamente.";
-
-    }
-
-    /*
-    ==========================================================
-    ERROR
-    ==========================================================
-    */
-
-    else{
-
-        $mensaje =
-            "No se han podido registrar las vacaciones.";
-    }
-}
 
 
     /*
@@ -151,22 +208,46 @@ if(isset($_POST["guardar"])){
     ========================================================
     */
 
-    if($_POST["tipo"] == "festivo"){
+    if(
+        isset($_POST["tipo"]) &&
+        $_POST["tipo"] == "festivo"
+    ){
 
-        $vacacionesModel->crearFestivoEmpresa(
-            $_POST["empresa_id"],
-            $_POST["fecha"],
-            $_POST["nombre"]
-        );
+        $resultadoFestivo =
+            $vacacionesModel->crearFestivoEmpresa(
 
-        $mensaje = "Festivo registrado correctamente.";
+                $_POST["empresa_id"],
+
+                $_POST["fecha"],
+
+                $_POST["nombre"]
+
+            );
+
+
+        if($resultadoFestivo){
+
+            $mensaje =
+                "Festivo registrado correctamente.";
+
+        }else{
+
+            $mensaje =
+                "No se ha podido registrar el festivo.";
+
+        }
+
     }
+
 }
 
 
-$eventos = $vacacionesModel->obtenerEventosCalendario();
+$eventos =
+    $vacacionesModel->obtenerEventosCalendario();
+
 
 include "../views/layouts/header.php";
+
 include "../views/layouts/sidebar.php";
 
 ?>
@@ -183,7 +264,15 @@ include "../views/layouts/sidebar.php";
 <?php if($mensaje != ""): ?>
 
 <div class="alert alert-success">
-    <?php echo $mensaje; ?>
+
+    <?php
+    echo htmlspecialchars(
+        $mensaje,
+        ENT_QUOTES,
+        "UTF-8"
+    );
+    ?>
+
 </div>
 
 <?php endif; ?>
@@ -200,6 +289,7 @@ include "../views/layouts/sidebar.php";
 
 
         <div class="fichaje-card">
+
 
             <button
                 class="btn-main-blue btn-full"
@@ -221,6 +311,7 @@ include "../views/layouts/sidebar.php";
 
             </button>
 
+
         </div>
 
 
@@ -230,12 +321,17 @@ include "../views/layouts/sidebar.php";
 
         <div class="fichaje-card">
 
+
             <h2>Filtros</h2>
 
 
             <div class="form-group">
 
-                <label>Empresa</label>
+
+                <label>
+                    Empresa
+                </label>
+
 
                 <select
                     id="filtroEmpresaCalendario"
@@ -247,17 +343,29 @@ include "../views/layouts/sidebar.php";
                     </option>
 
 
-                    <?php foreach($empresas as $empresa): ?>
+                    <?php
+                    foreach(
+                        $empresas
+                        as $empresa
+                    ):
+                    ?>
 
                         <option
                             value="<?php echo $empresa["id"]; ?>"
                         >
 
-                            <?php echo $empresa["nombre"]; ?>
+                            <?php
+                            echo htmlspecialchars(
+                                $empresa["nombre"],
+                                ENT_QUOTES,
+                                "UTF-8"
+                            );
+                            ?>
 
                         </option>
 
                     <?php endforeach; ?>
+
 
                 </select>
 
@@ -269,7 +377,11 @@ include "../views/layouts/sidebar.php";
                 style="margin-top:15px;"
             >
 
-                <label>Empleado</label>
+
+                <label>
+                    Empleado
+                </label>
+
 
                 <select
                     id="filtroEmpleadoCalendario"
@@ -281,24 +393,38 @@ include "../views/layouts/sidebar.php";
                     </option>
 
 
-                    <?php foreach($usuarios as $u): ?>
+                    <?php
+                    foreach(
+                        $usuarios
+                        as $u
+                    ):
+                    ?>
 
                         <option
                             value="<?php echo $u["id"]; ?>"
                             data-empresa="<?php echo $u["empresa_id"]; ?>"
                         >
 
-                            <?php echo $u["nombre"]; ?>
+                            <?php
+                            echo htmlspecialchars(
+                                $u["nombre"],
+                                ENT_QUOTES,
+                                "UTF-8"
+                            );
+                            ?>
 
                         </option>
 
                     <?php endforeach; ?>
 
+
                 </select>
 
             </div>
 
+
         </div>
+
 
     </aside>
 
@@ -309,13 +435,16 @@ include "../views/layouts/sidebar.php";
 
     <section class="vacaciones-calendar">
 
+
         <div class="fichaje-card">
 
             <div id="calendar"></div>
 
         </div>
 
+
     </section>
+
 
 </div>
 
@@ -340,7 +469,9 @@ include "../views/layouts/sidebar.php";
     id="drawer"
 >
 
+
     <div class="drawer-header">
+
 
         <h2 id="tituloDrawer">
             Agregar vacaciones
@@ -355,6 +486,7 @@ include "../views/layouts/sidebar.php";
             ×
 
         </button>
+
 
     </div>
 
@@ -379,7 +511,9 @@ include "../views/layouts/sidebar.php";
             id="empresaVacacionesDiv"
         >
 
-            <label>Empresa</label>
+            <label>
+                Empresa
+            </label>
 
 
             <select
@@ -392,17 +526,29 @@ include "../views/layouts/sidebar.php";
                 </option>
 
 
-                <?php foreach($empresas as $empresa): ?>
+                <?php
+                foreach(
+                    $empresas
+                    as $empresa
+                ):
+                ?>
 
                     <option
                         value="<?php echo $empresa["id"]; ?>"
                     >
 
-                        <?php echo $empresa["nombre"]; ?>
+                        <?php
+                        echo htmlspecialchars(
+                            $empresa["nombre"],
+                            ENT_QUOTES,
+                            "UTF-8"
+                        );
+                        ?>
 
                     </option>
 
                 <?php endforeach; ?>
+
 
             </select>
 
@@ -418,7 +564,9 @@ include "../views/layouts/sidebar.php";
             id="empleadoDiv"
         >
 
-            <label>Empleado</label>
+            <label>
+                Empleado
+            </label>
 
 
             <select
@@ -432,18 +580,30 @@ include "../views/layouts/sidebar.php";
                 </option>
 
 
-                <?php foreach($usuarios as $u): ?>
+                <?php
+                foreach(
+                    $usuarios
+                    as $u
+                ):
+                ?>
 
                     <option
                         value="<?php echo $u["id"]; ?>"
                         data-empresa="<?php echo $u["empresa_id"]; ?>"
                     >
 
-                        <?php echo $u["nombre"]; ?>
+                        <?php
+                        echo htmlspecialchars(
+                            $u["nombre"],
+                            ENT_QUOTES,
+                            "UTF-8"
+                        );
+                        ?>
 
                     </option>
 
                 <?php endforeach; ?>
+
 
             </select>
 
@@ -459,7 +619,9 @@ include "../views/layouts/sidebar.php";
             id="empresaDiv"
         >
 
-            <label>Empresa</label>
+            <label>
+                Empresa
+            </label>
 
 
             <select
@@ -467,17 +629,29 @@ include "../views/layouts/sidebar.php";
                 class="form-control"
             >
 
-                <?php foreach($empresas as $empresa): ?>
+                <?php
+                foreach(
+                    $empresas
+                    as $empresa
+                ):
+                ?>
 
                     <option
                         value="<?php echo $empresa["id"]; ?>"
                     >
 
-                        <?php echo $empresa["nombre"]; ?>
+                        <?php
+                        echo htmlspecialchars(
+                            $empresa["nombre"],
+                            ENT_QUOTES,
+                            "UTF-8"
+                        );
+                        ?>
 
                     </option>
 
                 <?php endforeach; ?>
+
 
             </select>
 
@@ -493,7 +667,9 @@ include "../views/layouts/sidebar.php";
             id="inicioDiv"
         >
 
-            <label>Fecha inicio</label>
+            <label>
+                Fecha inicio
+            </label>
 
 
             <input
@@ -515,7 +691,9 @@ include "../views/layouts/sidebar.php";
             id="finDiv"
         >
 
-            <label>Fecha fin</label>
+            <label>
+                Fecha fin
+            </label>
 
 
             <input
@@ -537,7 +715,9 @@ include "../views/layouts/sidebar.php";
             id="fechaFestivo"
         >
 
-            <label>Fecha</label>
+            <label>
+                Fecha
+            </label>
 
 
             <input
@@ -559,7 +739,9 @@ include "../views/layouts/sidebar.php";
             id="nombreFestivoDiv"
         >
 
-            <label>Nombre del festivo</label>
+            <label>
+                Nombre del festivo
+            </label>
 
 
             <input
@@ -583,7 +765,9 @@ include "../views/layouts/sidebar.php";
             id="comentarioDiv"
         >
 
-            <label>Comentario</label>
+            <label>
+                Comentario
+            </label>
 
 
             <textarea
@@ -601,6 +785,7 @@ include "../views/layouts/sidebar.php";
         =================================================== -->
 
         <div class="drawer-footer">
+
 
             <button
                 type="button"
@@ -623,9 +808,12 @@ include "../views/layouts/sidebar.php";
 
             </button>
 
+
         </div>
 
+
     </form>
+
 
 </div>
 
@@ -639,7 +827,9 @@ include "../views/layouts/sidebar.php";
     id="drawerDia"
 >
 
+
     <div class="drawer-header">
+
 
         <h2 id="tituloDrawerDia">
             Vacaciones
@@ -655,6 +845,7 @@ include "../views/layouts/sidebar.php";
 
         </button>
 
+
     </div>
 
 
@@ -667,6 +858,7 @@ include "../views/layouts/sidebar.php";
 
     <div class="drawer-footer">
 
+
         <button
             class="btn-main-blue"
             onclick="cerrarDrawerDia()"
@@ -676,7 +868,9 @@ include "../views/layouts/sidebar.php";
 
         </button>
 
+
     </div>
+
 
 </div>
 
@@ -698,16 +892,28 @@ ABRIR DRAWER
 function abrirDrawer(tipo){
 
     const drawer =
-        document.getElementById("drawer");
+        document.getElementById(
+            "drawer"
+        );
 
     const overlay =
-        document.getElementById("overlay");
+        document.getElementById(
+            "overlay"
+        );
 
-    drawer.classList.add("show");
 
-    overlay.classList.add("show");
+    drawer.classList.add(
+        "show"
+    );
 
-    document.getElementById("tipo").value = tipo;
+    overlay.classList.add(
+        "show"
+    );
+
+
+    document.getElementById(
+        "tipo"
+    ).value = tipo;
 
 
     /*
@@ -726,42 +932,58 @@ function abrirDrawer(tipo){
 
         document.getElementById(
             "empresaVacacionesDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "empleadoDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "empresaDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "inicioDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "finDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "fechaFestivo"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "nombreFestivoDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "comentarioDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
     }
 
@@ -782,42 +1004,58 @@ function abrirDrawer(tipo){
 
         document.getElementById(
             "empresaVacacionesDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "empleadoDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "empresaDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "inicioDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "finDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
 
         document.getElementById(
             "fechaFestivo"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "nombreFestivoDiv"
-        ).classList.remove("oculto");
+        ).classList.remove(
+            "oculto"
+        );
 
 
         document.getElementById(
             "comentarioDiv"
-        ).classList.add("oculto");
+        ).classList.add(
+            "oculto"
+        );
 
     }
 
@@ -833,12 +1071,21 @@ CERRAR DRAWER
 function cerrarDrawer(){
 
     document
-        .getElementById("drawer")
-        .classList.remove("show");
+        .getElementById(
+            "drawer"
+        )
+        .classList.remove(
+            "show"
+        );
+
 
     document
-        .getElementById("overlay")
-        .classList.remove("show");
+        .getElementById(
+            "overlay"
+        )
+        .classList.remove(
+            "show"
+        );
 
 }
 
@@ -852,12 +1099,21 @@ CERRAR DRAWER DEL DÍA
 function cerrarDrawerDia(){
 
     document
-        .getElementById("drawerDia")
-        .classList.remove("show");
+        .getElementById(
+            "drawerDia"
+        )
+        .classList.remove(
+            "show"
+        );
+
 
     document
-        .getElementById("overlay")
-        .classList.remove("show");
+        .getElementById(
+            "overlay"
+        )
+        .classList.remove(
+            "show"
+        );
 
 }
 
@@ -875,43 +1131,58 @@ document.addEventListener(
         calendar =
             new FullCalendar.Calendar(
 
-                document.getElementById("calendar"),
+                document.getElementById(
+                    "calendar"
+                ),
 
                 {
 
-                    locale:"es",
+                    locale:
+                        "es",
 
-                    initialView:"dayGridMonth",
+                    initialView:
+                        "dayGridMonth",
 
-                    firstDay:1,
+                    firstDay:
+                        1,
 
-                    height:"auto",
+                    height:
+                        "auto",
 
-                    selectable:true,
+                    selectable:
+                        true,
 
-                    navLinks:true,
+                    navLinks:
+                        true,
 
-                    dayMaxEvents:true,
+                    dayMaxEvents:
+                        true,
 
 
                     headerToolbar:{
 
-                        left:"prev,next today",
+                        left:
+                            "prev,next today",
 
-                        center:"title",
+                        center:
+                            "title",
 
-                        right:"dayGridMonth"
+                        right:
+                            "dayGridMonth"
 
                     },
 
 
                     buttonText:{
 
-                        today:"Hoy",
+                        today:
+                            "Hoy",
 
-                        month:"Mes",
+                        month:
+                            "Mes",
 
-                        week:"Semana"
+                        week:
+                            "Semana"
 
                     },
 
@@ -922,135 +1193,205 @@ document.addEventListener(
                     ==================================================
                     */
 
-                    dateClick:function(info){
+                    dateClick:
+                        function(info){
 
-                        const fecha =
-                            encodeURIComponent(
-                                info.dateStr
-                            );
-
-
-                        Promise.all([
-
-                            /*
-                            ==========================================
-                            VACACIONES
-                            ==========================================
-                            */
-
-                            fetch(
-                                "/app_fichaje/public/vacacionesDia.php?fecha=" +
-                                fecha
-                            )
-
-                            .then(
-                                function(response){
-
-                                    if(!response.ok){
-
-                                        throw new Error(
-                                            "Error al cargar las vacaciones."
-                                        );
-
-                                    }
-
-                                    return response.json();
-
-                                }
-                            ),
+                            const fecha =
+                                encodeURIComponent(
+                                    info.dateStr
+                                );
 
 
-                            /*
-                            ==========================================
-                            FESTIVOS
-                            ==========================================
-                            */
+                            Promise.all([
 
-                            fetch(
-                                "/app_fichaje/public/festivosDia.php?fecha=" +
-                                fecha
-                            )
 
-                            .then(
-                                function(response){
+                                fetch(
+                                    "/app_fichaje/public/vacacionesDia.php?fecha=" +
+                                    fecha
+                                )
 
-                                    if(!response.ok){
+                                .then(
+                                    function(response){
 
-                                        throw new Error(
-                                            "Error al cargar los festivos."
-                                        );
+                                        if(
+                                            !response.ok
+                                        ){
+
+                                            throw new Error(
+                                                "Error al cargar las vacaciones."
+                                            );
+
+                                        }
+
+
+                                        return response.json();
 
                                     }
-
-                                    return response.json();
-
-                                }
-                            )
-
-                        ])
+                                ),
 
 
-                        .then(
-                            function(resultados){
+                                fetch(
+                                    "/app_fichaje/public/festivosDia.php?fecha=" +
+                                    fecha
+                                )
 
-                                const vacaciones =
-                                    resultados[0];
+                                .then(
+                                    function(response){
 
-                                const festivos =
-                                    resultados[1];
+                                        if(
+                                            !response.ok
+                                        ){
 
-                                let html = "";
+                                            throw new Error(
+                                                "Error al cargar los festivos."
+                                            );
+
+                                        }
 
 
-                                /*
-                                ==========================================
-                                MOSTRAR FESTIVOS
-                                ==========================================
-                                */
+                                        return response.json();
 
-                                if(
-                                    Array.isArray(festivos) &&
-                                    festivos.length > 0
-                                ){
+                                    }
+                                )
 
-                                    festivos.forEach(
-                                        function(f){
 
-                                            html += `
+                            ])
 
-                                                <div
-                                                    class="lista-evento"
-                                                    style="position:relative;"
-                                                >
+                            .then(
+                                function(resultados){
 
-                                                    <strong>
-                                                        Festivo ${
-                                                            f.nombre ||
-                                                            "Sin nombre indicado"
-                                                        }
-                                                    </strong>
+                                    const vacaciones =
+                                        resultados[0];
 
-                                                    <br>
+                                    const festivos =
+                                        resultados[1];
 
-                                                    <small>
-                                                        ${
-                                                            f.empresa ||
-                                                            "Empresa no indicada"
-                                                        }
-                                                    </small>
+                                    let html =
+                                        "";
+
+
+                                    /*
+                                    ==========================================
+                                    MOSTRAR FESTIVOS
+                                    ==========================================
+                                    */
+
+                                    if(
+
+                                        Array.isArray(
+                                            festivos
+                                        )
+
+                                        &&
+
+                                        festivos.length > 0
+
+                                    ){
+
+                                        festivos.forEach(
+                                            function(f){
+
+                                                html += `
 
                                                     <div
-                                                        style="
-                                                            margin-top:15px;
-                                                        "
+                                                        class="lista-evento"
+                                                        style="position:relative;"
                                                     >
+
+                                                        <strong>
+                                                            Festivo ${
+                                                                f.nombre ||
+                                                                "Sin nombre indicado"
+                                                            }
+                                                        </strong>
+
+                                                        <br>
+
+                                                        <small>
+                                                            ${
+                                                                f.empresa ||
+                                                                "Empresa no indicada"
+                                                            }
+                                                        </small>
+
+                                                        <div
+                                                            style="
+                                                                margin-top:15px;
+                                                            "
+                                                        >
+
+                                                            <button
+                                                                type="button"
+                                                                class="btn-delete"
+                                                                onclick="
+                                                                    eliminarFestivo(
+                                                                        ${f.id},
+                                                                        '${info.dateStr}'
+                                                                    )
+                                                                "
+                                                            >
+
+                                                                Eliminar
+
+                                                            </button>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <hr>
+
+                                                `;
+
+                                            }
+                                        );
+
+                                    }
+
+
+                                    /*
+                                    ==========================================
+                                    MOSTRAR VACACIONES
+                                    ==========================================
+                                    */
+
+                                    if(
+
+                                        Array.isArray(
+                                            vacaciones
+                                        )
+
+                                        &&
+
+                                        vacaciones.length > 0
+
+                                    ){
+
+                                        vacaciones.forEach(
+                                            function(v){
+
+                                                html += `
+
+                                                    <div
+                                                        class="lista-evento"
+                                                    >
+
+                                                        <strong>
+                                                            ${v.nombre}
+                                                        </strong>
+
+                                                        <br>
+
+                                                        <small>
+                                                            ${v.empresa}
+                                                        </small>
 
                                                         <button
                                                             type="button"
                                                             class="btn-delete"
                                                             onclick="
-                                                                eliminarFestivo(
-                                                                    ${f.id},
+                                                                eliminarVacaciones(
+                                                                    ${v.id},
                                                                     '${info.dateStr}'
                                                                 )
                                                             "
@@ -1062,199 +1403,139 @@ document.addEventListener(
 
                                                     </div>
 
-                                                </div>
+                                                    <hr>
 
-                                                <hr>
+                                                `;
 
-                                            `;
+                                            }
+                                        );
 
-                                        }
+                                    }
+
+
+                                    /*
+                                    ==========================================
+                                    SI NO HAY NADA
+                                    ==========================================
+                                    */
+
+                                    if(
+
+                                        (
+                                            !Array.isArray(
+                                                vacaciones
+                                            )
+
+                                            ||
+
+                                            vacaciones.length === 0
+                                        )
+
+                                        &&
+
+                                        (
+                                            !Array.isArray(
+                                                festivos
+                                            )
+
+                                            ||
+
+                                            festivos.length === 0
+                                        )
+
+                                    ){
+
+                                        html =
+                                            "<p>No hay vacaciones ni festivos este día.</p>";
+
+                                    }
+
+
+                                    const titulo =
+                                        document.getElementById(
+                                            "tituloDrawerDia"
+                                        );
+
+
+                                    const contenido =
+                                        document.getElementById(
+                                            "contenidoDrawerDia"
+                                        );
+
+
+                                    const drawer =
+                                        document.getElementById(
+                                            "drawerDia"
+                                        );
+
+
+                                    const overlay =
+                                        document.getElementById(
+                                            "overlay"
+                                        );
+
+
+                                    if(
+
+                                        !titulo ||
+
+                                        !contenido ||
+
+                                        !drawer
+
+                                    ){
+
+                                        console.error(
+                                            "No existe el drawer del día."
+                                        );
+
+                                        return;
+
+                                    }
+
+
+                                    titulo.innerHTML =
+                                        "Vacaciones y festivos - " +
+                                        info.dateStr;
+
+
+                                    contenido.innerHTML =
+                                        html;
+
+
+                                    drawer.classList.add(
+                                        "show"
                                     );
+
+
+                                    if(overlay){
+
+                                        overlay.classList.add(
+                                            "show"
+                                        );
+
+                                    }
 
                                 }
+                            )
 
-
-                                /*
-                                ==========================================
-                                MOSTRAR VACACIONES
-                                ==========================================
-                                */
-
-                                if(
-                                    Array.isArray(vacaciones) &&
-                                    vacaciones.length > 0
-                                ){
-
-                                    vacaciones.forEach(
-                                        function(v){
-
-                                            html += `
-
-                                                <div
-                                                    class="lista-evento"
-                                                >
-
-                                                    <strong>
-                                                        ${v.nombre}
-                                                    </strong>
-
-                                                    <br>
-
-                                                    <small>
-                                                        ${v.empresa}
-                                                    </small>
-
-                                                    <button
-    type="button"
-    class="btn-delete btn-eliminar-vacacion"
-    data-id="${v.id}"
-    data-fecha="${info.dateStr}"
->
-    Eliminar
-</button>
-
-                                                </div>
-
-                                                <hr>
-
-                                            `;
-
-                                        }
-                                    );
-
-                                }
-
-
-                                /*
-                                ==========================================
-                                SI NO HAY NADA
-                                ==========================================
-                                */
-
-                                if(
-
-                                    (!Array.isArray(vacaciones) ||
-                                    vacaciones.length === 0)
-
-                                    &&
-
-                                    (!Array.isArray(festivos) ||
-                                    festivos.length === 0)
-
-                                ){
-
-                                    html =
-                                        "<p>No hay vacaciones ni festivos este día.</p>";
-
-                                }
-
-
-                                const titulo =
-                                    document.getElementById(
-                                        "tituloDrawerDia"
-                                    );
-
-
-                                const contenido =
-                                    document.getElementById(
-                                        "contenidoDrawerDia"
-                                    );
-
-
-                                const drawer =
-                                    document.getElementById(
-                                        "drawerDia"
-                                    );
-
-
-                                const overlay =
-                                    document.getElementById(
-                                        "overlay"
-                                    );
-
-
-                                if(
-                                    !titulo ||
-                                    !contenido ||
-                                    !drawer
-                                ){
+                            .catch(
+                                function(error){
 
                                     console.error(
-                                        "No existe el drawer del día."
+                                        "Error cargando vacaciones/festivos:",
+                                        error
                                     );
 
-                                    return;
+
+                                    alert(
+                                        "Error al cargar las vacaciones y los festivos."
+                                    );
 
                                 }
+                            );
 
-
-                                titulo.innerHTML =
-                                    "Vacaciones y festivos - " +
-                                    info.dateStr;
-
-
-                                contenido.innerHTML =
-                                    html;
-
-                                    document
-    .querySelectorAll(".btn-eliminar-vacacion")
-    .forEach(
-        function(boton){
-
-            boton.addEventListener(
-                "click",
-                function(event){
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    const id =
-                        this.dataset.id;
-
-                    const fecha =
-                        this.dataset.fecha;
-
-                    eliminarVacaciones(
-                        id,
-                        fecha
-                    );
-
-                }
-            );
-
-        }
-    );
-
-                                drawer.classList.add("show");
-
-
-                                if(overlay){
-
-                                    overlay.classList.add("show");
-
-                                }
-
-                            }
-                        )
-
-
-                        .catch(
-                            function(error){
-
-                                console.error(
-                                    "Error cargando vacaciones/festivos:",
-                                    error
-                                );
-
-
-                                alert(
-                                    "Error al cargar las vacaciones y los festivos."
-                                );
-
-                            }
-                        );
-
-                    },
+                        },
 
 
                     /*
@@ -1265,15 +1546,26 @@ document.addEventListener(
 
                     events:[
 
-                        <?php foreach($eventos as $evento): ?>
+                        <?php
+                        foreach(
+                            $eventos
+                            as $evento
+                        ):
+                        ?>
 
                         {
 
                             id:
-                                "<?= $evento["id"] ?>",
+                                "<?= htmlspecialchars(
+                                    $evento["id"],
+                                    ENT_QUOTES,
+                                    "UTF-8"
+                                ) ?>",
 
                             title:
-                                "<?= addslashes($evento["title"]) ?>",
+                                "<?= addslashes(
+                                    $evento["title"]
+                                ) ?>",
 
                             start:
                                 "<?= $evento["start"] ?>",
@@ -1293,25 +1585,51 @@ document.addEventListener(
                             allDay:
                                 true,
 
+
                             extendedProps:{
 
                                 tipo:
                                     "<?= $evento["extendedProps"]["tipo"] ?? "" ?>",
+
 
                                 empresa:
                                     "<?= addslashes(
                                         $evento["extendedProps"]["empresa"] ?? ""
                                     ) ?>",
 
+
+                                /*
+                                ID DE UNA EMPRESA
+                                PARA COMPATIBILIDAD
+                                */
+
+                                empresa_id:
+                                    "<?= (int)(
+                                        $evento["extendedProps"]["empresa_id"] ?? 0
+                                    ) ?>",
+
+
+                                /*
+                                IDS DE TODAS LAS EMPRESAS
+                                */
+
+                                empresa_ids:
+                                    <?= json_encode(
+                                        $evento["extendedProps"]["empresa_ids"] ?? []
+                                    ) ?>,
+
+
                                 empleados:
                                     <?= json_encode(
                                         $evento["extendedProps"]["empleados"] ?? []
                                     ) ?>,
 
+
                                 usuarios:
                                     <?= json_encode(
                                         $evento["extendedProps"]["usuarios"] ?? []
                                     ) ?>,
+
 
                                 motivo:
                                     "<?= addslashes(
@@ -1378,7 +1696,9 @@ document.addEventListener(
                     opcionesUsuarios.forEach(
                         function(opcion){
 
-                            if(opcion.value == ""){
+                            if(
+                                opcion.value == ""
+                            ){
 
                                 return;
 
@@ -1391,7 +1711,9 @@ document.addEventListener(
                             ){
 
                                 usuario.appendChild(
-                                    opcion.cloneNode(true)
+                                    opcion.cloneNode(
+                                        true
+                                    )
                                 );
 
                             }
@@ -1407,30 +1729,7 @@ document.addEventListener(
 
         /*
         ==========================================================
-        OCULTAR EVENTOS AL CARGAR
-        ==========================================================
-        */
-
-        calendar
-            .getEvents()
-            .forEach(
-                function(evento){
-
-                    evento.setProp(
-                        "display",
-                        "none"
-                    );
-
-                }
-            );
-
-
-        filtrarCalendario();
-
-
-        /*
-        ==========================================================
-        FILTROS
+        FILTROS DEL CALENDARIO
         ==========================================================
         */
 
@@ -1467,7 +1766,9 @@ document.addEventListener(
                 empleadosOriginales.forEach(
                     function(opcion){
 
-                        if(opcion.value == ""){
+                        if(
+                            opcion.value == ""
+                        ){
 
                             return;
 
@@ -1476,21 +1777,37 @@ document.addEventListener(
 
                         if(
 
-                            empresa == "" ||
+                            empresa == ""
 
-                            opcion.dataset.empresa ==
-                            empresa
+                            ||
+
+                            String(
+                                opcion.dataset.empresa
+                            ) === String(
+                                empresa
+                            )
 
                         ){
 
                             filtroEmpleadoCalendario.appendChild(
-                                opcion.cloneNode(true)
+                                opcion.cloneNode(
+                                    true
+                                )
                             );
 
                         }
 
                     }
                 );
+
+
+                /*
+                Si se cambia de empresa,
+                se reinicia el empleado
+                */
+
+                filtroEmpleadoCalendario.value =
+                    "";
 
 
                 filtrarCalendario();
@@ -1503,6 +1820,15 @@ document.addEventListener(
             "change",
             filtrarCalendario
         );
+
+
+        /*
+        ==========================================================
+        MOSTRAR TODO AL CARGAR
+        ==========================================================
+        */
+
+        filtrarCalendario();
 
     }
 );
@@ -1533,7 +1859,8 @@ function filtrarCalendario(){
         .forEach(
             function(evento){
 
-                let mostrar = true;
+                let mostrar =
+                    true;
 
 
                 /*
@@ -1543,15 +1870,91 @@ function filtrarCalendario(){
                 */
 
                 if(
-
-                    empresa !== "" &&
-
-                    evento.extendedProps.empresa !=
-                    empresa
-
+                    empresa !== ""
                 ){
 
-                    mostrar = false;
+                    const empresasEvento =
+                        (
+                            evento.extendedProps.empresa_ids
+                            || []
+                        ).map(Number);
+
+
+                    const empresaEvento =
+                        Number(
+                            evento.extendedProps.empresa_id
+                            || 0
+                        );
+
+
+                    /*
+                    Para vacaciones:
+                    comprobar todas las empresas
+                    del evento.
+                    */
+
+                    if(
+                        evento.extendedProps.tipo ===
+                        "vacaciones"
+                    ){
+
+                        if(
+
+                            !empresasEvento.includes(
+                                Number(empresa)
+                            )
+
+                        ){
+
+                            mostrar =
+                                false;
+
+                        }
+
+                    }
+
+
+                    /*
+                    Para festivos:
+                    comprobar empresa_id.
+                    */
+
+                    else if(
+                        evento.extendedProps.tipo ===
+                        "festivo"
+                    ){
+
+                        if(
+                            empresaEvento !==
+                            Number(empresa)
+                        ){
+
+                            mostrar =
+                                false;
+
+                        }
+
+                    }
+
+                    /*
+                    Otros eventos:
+                    */
+
+                    else if(
+                        evento.extendedProps.empresa_id
+                    ){
+
+                        if(
+                            empresaEvento !==
+                            Number(empresa)
+                        ){
+
+                            mostrar =
+                                false;
+
+                        }
+
+                    }
 
                 }
 
@@ -1564,9 +1967,13 @@ function filtrarCalendario(){
 
                 if(
 
-                    mostrar &&
+                    mostrar
 
-                    empleado !== "" &&
+                    &&
+
+                    empleado !== ""
+
+                    &&
 
                     evento.extendedProps.tipo ===
                     "vacaciones"
@@ -1581,23 +1988,41 @@ function filtrarCalendario(){
 
 
                     if(
+
                         !usuarios.includes(
                             Number(empleado)
                         )
+
                     ){
 
-                        mostrar = false;
+                        mostrar =
+                            false;
 
                     }
 
                 }
 
 
+                /*
+                ================================================
+                SI SE FILTRA POR EMPLEADO Y ES FESTIVO
+                ================================================
+
+                Los festivos pertenecen a una empresa,
+                no a un empleado.
+
+                Por tanto no se eliminan aquí.
+                */
+
+
                 evento.setProp(
+
                     "display",
+
                     mostrar
                         ? "auto"
                         : "none"
+
                 );
 
             }
@@ -1612,10 +2037,13 @@ EDITAR VACACIÓN
 ============================================================
 */
 
-function editarVacacion(id){
+function editarVacacion(
+    id
+){
 
     alert(
-        "Editar vacaciones " + id
+        "Editar vacaciones " +
+        id
     );
 
 }
@@ -1647,7 +2075,9 @@ function eliminarVacaciones(
         "vacaciones.php?eliminar=" +
         id +
         "&fecha=" +
-        encodeURIComponent(fecha);
+        encodeURIComponent(
+            fecha
+        );
 
 }
 
@@ -1678,7 +2108,9 @@ function eliminarFestivo(
         "vacaciones.php?eliminar_festivo=" +
         id +
         "&fecha=" +
-        encodeURIComponent(fecha);
+        encodeURIComponent(
+            fecha
+        );
 
 }
 
@@ -1720,14 +2152,16 @@ document
 
                     if(empresa){
 
-                        empresa.value = "";
+                        empresa.value =
+                            "";
 
                     }
 
 
                     if(usuario){
 
-                        usuario.value = "";
+                        usuario.value =
+                            "";
 
 
                         Array.from(
@@ -1735,7 +2169,8 @@ document
                         ).forEach(
                             function(opcion){
 
-                                opcion.hidden = false;
+                                opcion.hidden =
+                                    false;
 
                             }
                         );
@@ -1745,7 +2180,8 @@ document
 
                     if(nombreFestivo){
 
-                        nombreFestivo.value = "";
+                        nombreFestivo.value =
+                            "";
 
                     }
 
